@@ -84,7 +84,7 @@ def isotropic_scattering():
     cosphi: float.
         The cosine of the scattered phi direction.
     sinphi: float.
-        The sine of scattered the phi direction.
+        The sine of the scattered the phi direction.
     """
 
     xi1 = np.random.random()
@@ -98,22 +98,99 @@ def isotropic_scattering():
 
     return costheta, sintheta, cosphi, sinphi, phi
 
+
+def bin_photons(mu, mu_bins, n_photons):
+    """
+    Bins the photons into corresponding angle bins corresponding to the
+    direction they left the slab.
+
+    Parameters
+    ----------
+    mu: (1 x n_photons) array of floats.
+        The angle mu = cos(theta) which the photons left the slab.
+    mu_bins: integer.
+        The number of angle bins to bin for. The angle bins are from
+        0 < mu < 1, hence 0 < theta < 90
+    n_photons: integer.
+        The number of photons in the MC simulation.
+
+    Returns
+    -------
+    mu_hist: (1 x mu_bins) array of ints.
+        An array containing the number of photons in the binned angles, i.e.
+        the number of photon packets which leave the plane in the binned angle
+        range.
+    theta: (1 x mu_bins) array of floats.
+        An array containing the theta angles for which the photons have been
+        binned.
+    """
+
+    dtheta = 1/mu_bins
+    half_width = 0.5 * dtheta  # see kenny wood's code for half_width...?
+
+    theta = np.zeros(mu_bins)
+    mu_hist = np.zeros(mu_bins)
+
+    # calculate the theta binning angles
+    for i in range(mu_bins):
+        theta[i] = np.arccos(i * dtheta + half_width) * (180/np.pi)
+
+    # bin the mu = cos(theta) angles accordingly
+    for i in range(n_photons):
+        j = abs(int(mu[i] * mu_bins))
+        mu_hist[j] = mu_hist[j] + 1
+
+    return mu_hist, theta
+
+
+def moments(mu_bins, mu_hist, theta):
+    """
+    Calculate the intensity of the radiation field by counting photons.
+
+    Parameters
+    ----------
+    mu_bins: integer.
+        The number of bins in the range 0 - 90 degrees.
+    mu_hist: (1 x mu_bins) array of ints.
+        An array containing the number of photons in the binned angles, i.e.
+        the number of photon packets which leave the plane in the binned angle
+    theta: (1 x mu_bins) array of floats.
+        An array containing the theta angles for which the photons have been
+        binned.
+
+    Returns
+    -------
+    intensity: (1 x mu_bins) array of floats.
+        The intensity estimated via the number of photon in each binned angle.
+    """
+
+    intensity = np.zeros(mu_bins)
+
+    for i in range(mu_bins):
+        intensity[i] = (mu_hist[i] * mu_bins)/(2 * np.sum(mu_hist) *
+                                               np.cos(theta[i] * np.pi/180))
+
+    return intensity
+
+
 # =============================================================================
 # Simulation Parameters
 # =============================================================================
 
 start = timeit.default_timer()
 
-# set simulation parameters
-NPhotons = int(10e4)
-tau_max = 10
+# set simulation parameters, 10e4 photon packets is ~5 minutes
+n_photons = int(10e4)
+tau_max = 17
+mu_bins = 20
 albedo = 1
 
-MU = np.zeros(NPhotons)
-PHI = np.zeros(NPhotons)
+MU = np.zeros(n_photons)
+PHI = np.zeros(n_photons)
 
-if NPhotons:
-    for ph in range(NPhotons):
+if n_photons:
+    photon_count = 1
+    while photon_count <= n_photons:
         # genereate a photon at the origin of the system
         xt, yt, zt, costheta, sintheta, cosphi, sinphi = emit_photon()
 
@@ -124,12 +201,13 @@ if NPhotons:
             x = xt
             y = yt
             z = zt
-            # sample a random optical depth and hence travel distance
+            # sample a random optical depth and travel distance
             tau, L = sample_optical_depth(tau_max)
             # update the positions of the photon
             xt = x + L * sintheta * cosphi
             yt = y + L * sintheta * sinphi
             zt = z + L * costheta
+
             # determine if the photon scatters or not and update direction
             xi = np.random.rand()
             if (xi < albedo) and (zt > 0) and (zt < 1):
@@ -137,12 +215,26 @@ if NPhotons:
                     isotropic_scattering()
 
         # if zt < 0, the photon has left through the bottom of the plane, and
-        # gone into the star
+        # gone into the star therefore restart the packet
         # if zt > 1, the photon has left through the top of the plane, record
         # the direction the photon left
-        if (zt >= 1):
-            MU[ph] = costheta
-            PHI[ph] = phi
+        if (zt >= 1.0):
+            i = photon_count - 1  # python uses zero indexing so etc
+            MU[i] = costheta
+            PHI[i] = phi
+
+            photon_count += 1  # increment photon counter :^)
+
+    mu_hist, theta = bin_photons(MU, mu_bins, n_photons)
+    intensity = moments(mu_bins, mu_hist, theta)
+
+    # plot the intensity against angle
+    plt.figure(figsize=(8, 8))
+    plt.plot(theta, intensity, 'o')
+    plt.xlabel(r'Angle, $\theta$')
+    plt.ylabel(r'Mean Intensity, $J$')
+    plt.savefig('intensity.pdf')
+    plt.show()
 
     stop = timeit.default_timer()
     print("Scattering completed in: {:3.2f} seconds.".format(stop - start))
