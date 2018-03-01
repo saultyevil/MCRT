@@ -1,6 +1,5 @@
 import timeit
 import numpy as np
-from numba import jit
 from matplotlib import pyplot as plt
 
 
@@ -134,8 +133,8 @@ def photon_moments(mu_bins, mu_hist, theta):
 print('Beginning Simulation...\n')
 
 n_photons = int(10e4)
-mu_bins = 20
-tau_max = 7
+mu_bins = 10
+tau_max = 10
 albedo = 1
 
 start = timeit.default_timer()
@@ -149,8 +148,10 @@ for packet in range(n_photons):
         mu[packet] = photon_packet._costheta
         phi[packet] = photon_packet._phi
 
-    if ((packet + 1) % 5000 == 0):
-        print('{} photons transported.'.format(packet + 1))
+    if ((packet + 1) % 10000 == 0):
+        percent_complete = 100 * (packet + 1)/n_photons
+        print('{} photons ({:3.1f}%) transported.'
+              .format(packet + 1, percent_complete))
 
 mu_hist, theta = bin_photons(mu, mu_bins, n_photons)
 energy_absorbed = mu_hist/n_photons
@@ -165,22 +166,21 @@ print('\nTransport of {} packets completed in {:3.2f} seconds.'
 # Plots
 # =============================================================================
 
-fig = plt.figure(figsize=(15, 8))
+fig = plt.figure(figsize=(17, 8))
 
 # plot the intensity against angle
 ax1 = fig.add_subplot(121)
 ax1.plot(theta, intensity, 'kx')
 ax1.set_xlabel(r'Angle, $\theta$')
-ax1.set_ylabel(r'Mean Intensity, $J$')
+ax1.set_ylabel(r'Normalised Intensity')
 ax1.set_xlim(0, 90)
-ax1.set_ylim(0)
 
 # plot the energy absorbed against angle
 ax2 = fig.add_subplot(122)
 ax2.plot(theta, energy_absorbed, 'kx')
 ax2.set_xlabel(r'Angle, $\theta$')
+ax2.set_ylabel(r'Energy Absorbed, $E_{abs}$')
 ax2.set_xlim(0, 90)
-ax2.set_ylim(0)
 
 plt.savefig('mcrt_plane.pdf')
 plt.show()
