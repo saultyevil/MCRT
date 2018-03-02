@@ -11,12 +11,12 @@ int main(void){
     long n_photons;
     double tau_max, albedo;
 
-    n_photons = 1000000;
-    mu_bins = MU_BINS;
-    tau_max = 7;
+    n_photons = 1000000;   
+    tau_max = 50;
     albedo = 1;
 
     /* have parameters now, so create the arrays & variables */
+    mu_bins = MU_BINS;
     struct photon packet;
     struct photon_hist hist;
     double MU[n_photons], intensity[mu_bins];
@@ -30,6 +30,7 @@ int main(void){
     intensityPtr = intensity;
 
 /* --------------------------- Start the simulation ------------------------ */
+
     printf("Beginning simulation...\n");
     print_time();
 
