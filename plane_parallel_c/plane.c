@@ -7,20 +7,20 @@
 int main(void){
 
     /* to do: par file to read in the parameters */
-    int n_photons, mu_bins;
+    int photon_count, mu_bins;
+    long n_photons;
     double tau_max, albedo;
-    
+
     n_photons = 1000000;
-    mu_bins = 10;
+    mu_bins = MU_BINS;
     tau_max = 7;
     albedo = 1;
 
     /* have parameters now, so create the arrays & variables */
-    int photon_count;
     struct photon packet;
     struct photon_hist hist;
-    double MU[n_photons], PHI[n_photons], intensity[mu_bins];
-
+    double MU[n_photons], intensity[mu_bins];
+    
     /* initalise all of the pointers and point them at something */
     double *intensityPtr;
     struct photon *packetPtr;

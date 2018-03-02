@@ -34,7 +34,7 @@ struct photon_hist *bin_photons(double mu[], int n_photons, int mu_bins){
 int *calculate_intensity(struct photon_hist *hist, double *intensity,
 int n_photons, int mu_bins){
     int i;
- 
+
     for (i = 0; i < mu_bins; i++){
         intensity[i] = ((float)hist -> bins[i] * mu_bins)/(2 * n_photons * 
             cos(hist -> theta[i] * M_PI/180));

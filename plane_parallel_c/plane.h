@@ -1,3 +1,7 @@
+/* --------------------------- global variable ------------------------------*/
+
+#define MU_BINS 25
+
 /*-------------------------- struct definitions -----------------------------*/
 
 /* photon packet */
@@ -14,8 +18,8 @@ struct photon {
 
 /* histogram for binned angles and count */
 struct photon_hist {
-    int bins[10];
-    double theta[10];
+    int bins[MU_BINS];
+    double theta[MU_BINS];
 };
 
 /*---------------------------------------------------------------------------*/
