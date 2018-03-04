@@ -25,3 +25,7 @@ clean:
 clean-all:
 	-rm -f *.o
 	-rm -f $(TARGET)
+
+clean-data:
+	-rm -f *.pdf
+	-rm -f *.dat
