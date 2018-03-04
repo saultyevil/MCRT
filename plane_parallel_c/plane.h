@@ -1,6 +1,7 @@
 /* -------------------------- global variables ------------------------------*/
 
 #define MU_BINS 50   // i hate this
+#define MAX_LINE 256
 
 /*-------------------------- struct definitions -----------------------------*/
 
@@ -27,6 +28,8 @@ struct photon_hist {
 
 /*-------------- function prototypes of all the functions -------------------*/
 
+/* read in the value of a parameter from file */
+double read_in_par(char par[]);
 /* generates random numbers */
 double random_number(void);
 /* prints the current time */

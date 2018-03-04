@@ -11,12 +11,12 @@ int main(void){
     long n_photons;
     double tau_max, albedo;
 
-    n_photons = 1000000;
-    tau_max = 10;
-    albedo = 1;
+    n_photons = (long) read_in_par("N_PHOTONS");
+    tau_max = read_in_par("TAU_MAX");
+    albedo = read_in_par("ALBEDO");
+    mu_bins = MU_BINS;  /* MU_BINS is defined in the plane.h */
 
     /* have parameters now, so create the arrays & variables */
-    mu_bins = MU_BINS;
     struct photon packet;
     struct photon_hist hist;
     double MU[n_photons], intensity[mu_bins];
@@ -33,6 +33,11 @@ int main(void){
 
     printf("Beginning simulation...\n");
     print_time();
+    printf("Parameters:\n");
+    printf("N_PHOTONS:  %ld\n", n_photons);
+    printf("TAU_MAX:    %3.1f\n", tau_max);
+    printf("ALBEDO:     %1.1f\n", albedo);
+    printf("MU_BINS:    %d\n\n", mu_bins);
 
     /* set the seed for rand() */
     srand(time(NULL));
@@ -46,7 +51,7 @@ int main(void){
         /* provides a progress report */
         if ((photon_count + 1) % 100000 == 0){
             printf("%6.0d photon packets transported (%3.0f%%)\n",
-            (photon_count + 1), (photon_count + 1.0)/n_photons * 100.0);
+            (photon_count + 1), (photon_count + 1.0)/n_photons * 100);
         }
     }
 
