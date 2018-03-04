@@ -10,7 +10,7 @@ Monte Carlo Radiative Transfer codes.
 ## plane_parallel.ipynb
    Jupyter notebook version of plane_oo.py.
 
-# plane_parallel.c
+# plane_parallel_c
    Contains a C code to simulate the transport of a photon packet through a 
    star's outer atmosphere. Reads in parameters from a file and outputs the
    data to a file. plot.py plots the output into a pdf. To compile, type
