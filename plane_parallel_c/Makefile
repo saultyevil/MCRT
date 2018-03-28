@@ -1,7 +1,7 @@
 TARGET = plane
 LIBS = -lm
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -pedantic -Wall
 
 .PHONY: default all clean
 
@@ -19,13 +19,16 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
+# remove the object files
 clean:
 	-rm -f *.o
 
+# remove the object files and the binary executable
 clean-all:
 	-rm -f *.o
 	-rm -f $(TARGET)
 
+# remove the data output by the program
 clean-data:
 	-rm -f *.pdf
 	-rm -f *.dat
