@@ -11,34 +11,36 @@
  *  (the directions) are calculated and used as this generally seems to be more
  *  computationally efficient. The counter variables for tracking the
  *  interactions of the packet are set to 0.
- *
- *  @param Void.
- *  @return *packetPtr: pointer to struct.
  */
-
-struct photon *emit_photon(void)
+int emit_photon(struct photon *packetPtr)
 {
-    struct photon *packetPtr = malloc(sizeof(struct photon));
-
-    /* set location to origin of the cell */
+    /*
+     * Set location to origin of the cell
+     */
     packetPtr -> x = 0.0;
     packetPtr -> y = 0.0;
     packetPtr -> z = 0.0;
 
-    /* sample a theta direction */
+    /*
+     * Sample a theta direction
+     */
     packetPtr -> costheta = sqrt(random_number());
     packetPtr -> sintheta = sqrt(1 - (packetPtr -> costheta) *
                                  (packetPtr -> costheta));
 
-    /* sample a phi direction */
+    /*
+     * Sample a phi direction
+     */
     packetPtr -> phi = 2 * M_PI * random_number();
     packetPtr -> cosphi = cos(packetPtr -> phi);
     packetPtr -> sinphi = sin(packetPtr -> phi);
 
-    /* counters for keeping track of the packet interactions */
+    /*
+     * Counters for keeping track of packet interactions
+     */
     packetPtr -> interactions = 0;
     packetPtr -> avg_tau = 0;
     packetPtr -> avg_L = 0;
 
-    return packetPtr;
+    return 0;
 }

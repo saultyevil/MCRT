@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-data = np.loadtxt('intensity.dat', skiprows=1)
+data = np.loadtxt('intensity.txt', skiprows=1)
 
 theta = data[:, 0]
 counts = data[:, 1]

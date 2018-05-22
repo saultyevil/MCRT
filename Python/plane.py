@@ -1,9 +1,3 @@
-# =============================================================================
-# Radiative Transfer of Photons: plane parallel atmosphere.
-# Photons will be isotropically scattered, so every intereaction of a photon
-# will be a scattering event.
-# =============================================================================
-
 import timeit
 import numpy as np
 from matplotlib import pyplot as plt

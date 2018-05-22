@@ -1,5 +1,4 @@
 #include <math.h>
-#include <stdio.h>
 
 #include "plane.h"
 
@@ -13,35 +12,38 @@
  *  scattered isotropically and has its direction changed. Diagnostic
  *  information about the photon packet's interactions can be printed to the
  *  screen if required.
- *
- *  @param *packetPtr, albedo, tau_max, printMsg.
- *  @return void.
  */
 
-void transport_photon(struct photon *packetPtr, double albedo, double tau_max)
+int transport_photon(struct photon *packetPtr, double albedo, double tau_max)
 {
-    int int_count;
+    int int_count = 0;
     double tau, L, L_tot = 0, tau_tot = 0;
 
     while (packetPtr -> z >= 0.0 && packetPtr -> z <= 1.0)
     {
-        /* sample a random optical depth and calculate the dist L */
+        /*
+         * Sample a random optical depth, calculate the distance moved L and
+         * update the position of the packet
+         */
         tau = -1.0 * log(random_number());
         L = tau/tau_max;
 
-        /* update the position of the packet */
         packetPtr -> x += L * packetPtr -> sintheta * packetPtr -> cosphi;
         packetPtr -> y += L * packetPtr -> sintheta * packetPtr -> sinphi;
         packetPtr -> z += L * packetPtr -> costheta;
 
-        /* if z < 0, has gone into the atmosphere therefore restart the
-           packet */
+        /*
+         * If z < 0, has gone back into the atmosphere, therefore restart the
+         * packet
+         */
         if (packetPtr -> z < 0.0)
         {
-            *packetPtr = *emit_photon();
+            emit_photon(packetPtr);
         }
 
-        /* isotropic scattering */
+        /*
+         * Isotropic scattering
+         */
         if (random_number() < albedo && packetPtr -> z <= 1.0)
         {
             packetPtr -> costheta = 2 * random_number() -1;
@@ -52,13 +54,17 @@ void transport_photon(struct photon *packetPtr, double albedo, double tau_max)
             packetPtr -> sinphi = sin(packetPtr -> phi);
         }
 
-        int_count++;
+        int_count += 1;
         L_tot += L;
         tau_tot += tau;
     }
 
-    /* used to keep track of the average interactions happening */
+    /*
+     * Used to keep track of the average interactions happening
+     */
     packetPtr -> avg_L = L_tot/int_count;
     packetPtr -> avg_tau = tau_tot/int_count;
     packetPtr -> interactions = int_count;
+
+    return 0;
 }
