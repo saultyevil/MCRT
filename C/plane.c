@@ -10,13 +10,32 @@ int main(int argc, char *argv[])
     int mu_bins, verbose_output, avg_scatter, avg_scatter_total = 0;
     long n_photons;
     double tau_max, albedo;
+    char *ini_file;
+
+    FILE *verbose_file;  // have to declare here for scope reasons
+    verbose_output = 0;  // this needs to be sorted out -- have in the ini file?
+
+    printf("\nBeginning simulation...\n");
+    print_time();
+
+    if (argc >= 2)
+    {
+        ini_file = argv[1];
+
+    }
+    else
+    {
+        printf("No configuration file provided in the program arguments.\n");
+        printf("Using default filename: %s.\n\n", INI_FILE);
+        ini_file = INI_FILE;
+    }
 
     /*
      * Read in variables from file
      */
-    read_long("N_PHOTONS", &n_photons);
-    read_double("TAU_MAX", &tau_max);
-    read_double("ALBEDO", &albedo);
+    read_long("N_PHOTONS", &n_photons, ini_file);
+    read_double("TAU_MAX", &tau_max, ini_file);
+    read_double("ALBEDO", &albedo, ini_file);
     mu_bins = MU_BINS;  // MU_BINS is defined in the plane.h for now
 
     /*
@@ -27,27 +46,6 @@ int main(int argc, char *argv[])
     struct photon_hist *hist = malloc(sizeof(struct photon_hist));
     struct photon *packetPtr = malloc(sizeof(struct photon));
 
-    FILE *verbose_file;  // have to declare here for scope reasons
-    verbose_output = 0;
-
-    if (argc >= 2)
-    {
-        verbose_output = atoi(argv[1]);
-
-        if (verbose_output == 0 || verbose_output == 1)
-        {
-            ;  // using != didn't work properly :^), so do hacky fix
-        }
-        else
-        {
-            printf("Bad input for verbose output. Should be 1 or 0.\n");
-            printf("Using default setting.\n");
-            verbose_output = 0;
-        }
-    }
-
-    printf("\nBeginning simulation...\n");
-    print_time();
     printf("Parameters:\n");
     printf("-----------\n\n");
     printf("N_PHOTONS      : %ld\n", n_photons);

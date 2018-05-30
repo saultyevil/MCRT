@@ -54,11 +54,11 @@ int print_time(void);
 /*
  * Read in the a double of a parameter from file
  */
-int read_double(char *par_string, double *parameter);
+int read_double(char *par_string, double *parameter, char *ini_file);
 /*
  * Read in the a long of a parameter from file
  */
-int read_long(char *par_string, long *parameter);
+int read_long(char *par_string, long *parameter, char *ini_file);
 /*
  * Writes simulation output to file
  */

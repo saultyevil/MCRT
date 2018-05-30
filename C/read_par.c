@@ -13,14 +13,14 @@
  *  exit.
  */
 
-int read_double(char *par_string, double *parameter)
+int read_double(char *par_string, double *parameter, char *ini_file)
 {
     char line[MAX_LINE], ini_par_name[MAX_LINE], par_separator[MAX_LINE];
     char par_value[MAX_LINE];
 
     FILE *par_file;
 
-    if ((par_file = fopen(INI_FILE, "r")) == NULL)
+    if ((par_file = fopen(ini_file, "r")) == NULL)
     {
         printf("Cannot open parameter file '%s'.\n", INI_FILE);
         exit(-1);
@@ -83,14 +83,14 @@ int read_double(char *par_string, double *parameter)
     return 0;
 }
 
-int read_long(char *par_string, long *parameter)
+int read_long(char *par_string, long *parameter, char *ini_file)
 {
     char line[MAX_LINE], ini_par_name[MAX_LINE], par_separator[MAX_LINE];
     char par_value[MAX_LINE];
 
     FILE *par_file;
 
-    if ((par_file = fopen(INI_FILE, "r")) == NULL)
+    if ((par_file = fopen(ini_file, "r")) == NULL)
     {
         printf("Cannot open parameter file '%s'.\n", INI_FILE);
         exit(-1);
