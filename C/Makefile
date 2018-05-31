@@ -1,34 +1,36 @@
-TARGET = plane
-LIBS = -lm
+# Helpful macros
+TARGET_EXEC ?= plane
+OBJ_DIR ?= ./objects
+SRC_DIRS ?= ./source
+
+# Macros for CC
 CC = gcc
-CFLAGS = -g -pedantic -Wall
+CFLAGS = -pedantic -Wall
+LIBS = -lm -lgsl -lgslcblas
 
-.PHONY: default all clean
+# Directories
+SRCS := $(shell find $(SRC_DIRS) -name *.c)
+OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
+DEPS := $(OBJS:.o=.d)
 
-default: $(TARGET)
-all: default
+# Include Macros
+INC_DIRS := $(shell find $(SRC_DIRS) -type d)
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
-HEADERS = $(wildcard *.h)
+# Compile the source
+$(TARGET_EXEC): $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS) $(LIBS) -o $@
 
-%.o: %.c $(HEADERS)
+# Create object files
+$(OBJ_DIR)/%.c.o: %.c
+	$(MKDIR_P) $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PRECIOUS: $(TARGET) $(OBJECTS)
+.PHONY: clean
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
-
-# remove the object files
 clean:
-	-rm -f *.o
+	$(RM) -r $(OBJ_DIR)
 
-# remove the object files and the binary executable
-clean-all:
-	-rm -f *.o
-	-rm -f $(TARGET)
+-include $(DEPS)
 
-# remove the data output by the program
-clean-data:
-	-rm -f *.pdf
-	-rm -f *.dat
+MKDIR_P ?= mkdir -p
