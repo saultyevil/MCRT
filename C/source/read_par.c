@@ -12,9 +12,9 @@ int get_parameters(char *ini_file)
 {
     if (strcmp(ini_file, "-noparf") == 0)
     {
-        printf("-----------------------------\n");
-        printf("USING NO PARAMETER FILE MODE.\n");
-        printf("-----------------------------\n\n");
+        printf("----------------------------\n");
+        printf("USING NO PARAMETER FILE MODE\n");
+        printf("----------------------------\n\n");
         printf("Please input appropriate choices for parameters.\n\n");
 
         get_int_CL("MU_BINS", &mu_bins);

@@ -6,9 +6,12 @@
  *
  * ************************************************************************** */
 
+#include <stdio.h>  // required for FILE in function prototype
+
 /*
  * I/O
  */
+
 int get_parameters(char *ini_file);
 int get_parameters_OLD(char *ini_file);
 int print_parameters(void);
@@ -18,6 +21,7 @@ int get_int_CL(char *par_name, int *parameter);
 int get_double_CL(char *par_name, double *parameter);
 int default_param_values(char *par_name, char *par_value_string, int double_sw);
 int write_to_file(Photon_hist *hist, Moments *moments, double *intensity);
+int print_par_header(FILE *write_file, int out_file);
 
 /*
  * General utility
