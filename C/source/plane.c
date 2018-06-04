@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -18,12 +19,11 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("No configuration file provided in the program arguments.\n");
-        printf("Using default configuration file: %s.\n\n", DEFAULT_INI_FILE);
+        printf("No configuration file option provided in program argument.\n");
+        printf("Using default configuration filename: %s.\n\n",
+               DEFAULT_INI_FILE);
         ini_file = DEFAULT_INI_FILE;
     }
-
-    time_t start = time(NULL);
 
     /*
      * Initialise the random seed using the clock for now.
@@ -34,11 +34,13 @@ int main(int argc, char *argv[])
      * Get the simulation parameters from file and start the MCRT procedure
      */
     get_parameters(ini_file);
+
+    time_t start = time(NULL);
     start_mcrt();
 
     time_t stop = time(NULL);
 
-    printf("\nSimulation completed.\nTime elapsed: %3.2f s.\n",
+    printf("\nSimulation completed.\nMonte Carlo run time: %3.2f s.\n",
            difftime(stop, start));
 
     return 0;

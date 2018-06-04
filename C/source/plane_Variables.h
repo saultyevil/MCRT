@@ -19,8 +19,10 @@
  */
 #define MAX_LINE 128
 #define NO_PAR_CONST -1
+#define NO_PAR_CONST_STRING '\0'
 #define DEFAULT_INI_FILE "plane.ini"
-#define OUTPUT_FILE "intensity.txt"
+#define OUTPUT_FILE_INTENS "intensity.txt"
+#define OUTPUT_FILE_MOMENTS "moments.txt"
 
 /*
  * Global variables which are used practically everywhere in the program. The
@@ -34,6 +36,8 @@
  */
 int mu_bins;
 int n_photons;
+int n_levels;
+int output_freq;
 double tau_max;
 double albedo;
 
@@ -43,6 +47,7 @@ double albedo;
  *
  *  Parameters:
  *  - absorb: flag for if a phonton was absorbed
+ *  - n_inters: count for how many interactions undergone
  *  - x: x-coord of the photon
  *  - y: y-coord of the photon
  *  - z: z-coord of the phone
@@ -51,9 +56,10 @@ double albedo;
  *  - cos_phi: the cosine of the phi angular dependence
  *  - sin_phi: the sine of the phi angular dependence
  */
-typedef struct
+typedef struct Photon
 {
     int absorb;
+    int n_inters;
     double x;
     double y;
     double z;
@@ -71,8 +77,21 @@ typedef struct
  *  - *bins: the binned angle counts.
  *  - *theta: the binned angles.
  */
-typedef struct
+typedef struct Photon_hist
 {
     int *bins;
     double *theta;
 } Photon_hist;
+
+/*
+ * Moments data type - used for storing the moments of the radiation field.
+ */
+typedef struct Moments
+{
+    double *j_plus;
+    double *h_plus;
+    double *k_plus;
+    double *j_minus;
+    double *h_minus;
+    double *k_minus;
+} Moments;
