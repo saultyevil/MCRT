@@ -5,8 +5,8 @@
 
 #include <omp.h>
 
-#include "plane_variables.h"
-#include "plane_functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 int main(int argc, char *argv[])
 {

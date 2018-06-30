@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Write the binned angles and observables to file.
  *

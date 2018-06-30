@@ -6,8 +6,8 @@
     #include <omp.h>
 #endif
 
-#include "plane_variables.h"
-#include "plane_functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Read in parameters from an input file or from the user.
  *

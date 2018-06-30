@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Find a default value for a parameter.
  *

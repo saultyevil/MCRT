@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "plane_variables.h"
-#include "plane_functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Calculate the photon's contribution to the moments of the radiation
  *         field.

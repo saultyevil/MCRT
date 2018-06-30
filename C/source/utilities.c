@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "plane_variables.h"
-#include "plane_functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Free the struct type Moments and the arrays within.
  *

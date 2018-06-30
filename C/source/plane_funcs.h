@@ -30,6 +30,8 @@ int print_time(void);
 double rand_num(void);
 int init_seed(int seed);
 double gsl_rand_num(double min, double max);
+int free_mu_hist(Photon_hist *hist);
+int free_moment_arrays(Moments *moments);
 
 /*
  * Monte Carlo/transport functions

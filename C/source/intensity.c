@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#include "plane_vars.h"
+#include "plane_funcs.h"
 
 /** @brief Calculated the binned angles and initialise the bin counts as 0.
  *
