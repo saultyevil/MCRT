@@ -11,8 +11,8 @@
  */
 int calculate_moments(Photon *packet, Moments *moments, double z2)
 {
-    int level1 = 0;
-    int level2 = 0;
+    int level1 = 0,
+        level2 = 0;
     double z1 = packet->z;
 
     if ((z1 > 0) && (z2 > 0) && ((int) (z1*n_levels) == (int) (z2*n_levels)))

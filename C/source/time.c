@@ -7,7 +7,7 @@
 
 int print_time(void)
 {
-    char* c_time_string;
+    char *c_time_string;
     time_t current_time;
 
     current_time = time(NULL);

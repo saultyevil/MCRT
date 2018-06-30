@@ -10,8 +10,8 @@
 
 int write_to_file(Photon_hist *hist, Moments *moments, double *intensity)
 {
-    FILE *write_file_intens = NULL;
-    FILE *write_file_moments = NULL;
+    FILE *write_file_intens = NULL,
+         *write_file_moments = NULL;
 
     /*
      * Write out the intensity data to file
