@@ -4,9 +4,9 @@ OBJ_DIR ?= ./objects
 SRC_DIRS ?= ./source
 
 # Macros for CC
-CC = gcc
-CFLAGS = -pedantic -Wall
-LIBS = -lm -lgsl -lgslcblas
+CC = gcc-8
+CFLAGS = -pedantic -Wall -fopenmp
+LIBS = -lm -lgsl -lgslcblas -fopenmp
 
 # Directories
 SRCS := $(shell find $(SRC_DIRS) -name *.c)

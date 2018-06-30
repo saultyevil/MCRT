@@ -139,7 +139,7 @@ def bin_photons(mu, mu_bins, n_photons):
     return mu_hist, theta
 
 
-def photon_moments(mu_bins, mu_hist, theta):
+def photon_intensities(mu_bins, mu_hist, theta):
     """
     Calculate the mean intensity for the bin angles.
 
@@ -196,7 +196,7 @@ def photon_transport(n_photons, tau_max, mu_bins, albedo):
     MU = np.zeros(n_photons)
     PHI = np.zeros(n_photons)
     photon_count = 1
-    while photon_count <= n_photons:
+    for photon_count in range(n_photons):
         # genereate a photon at the origin of the system
         xt, yt, zt, costheta, sintheta, cosphi, sinphi = emit_photon()
 
@@ -214,6 +214,8 @@ def photon_transport(n_photons, tau_max, mu_bins, albedo):
             if (xi < albedo) and (zt > 0) and (zt < 1):
                 costheta, sintheta, cosphi, sinphi, phi = \
                     isotropic_scattering()
+            elif (xi > albedo) and (zt > 0) and (zt < 1):
+                break
 
         # if zt < 0, the photon packet has gone into the star hence restart
         # the photon packet. If zt > 1.0, the photon packet has left the
@@ -229,7 +231,7 @@ def photon_transport(n_photons, tau_max, mu_bins, albedo):
             photon_count += 1  # increment photon counter :^)
 
     mu_hist, theta = bin_photons(MU, mu_bins, n_photons)
-    intensity = photon_moments(mu_bins, mu_hist, theta)
+    intensity = photon_intensities(mu_bins, mu_hist, theta)
     energy = mu_hist/n_photons
 
     stop = timeit.default_timer()
@@ -244,8 +246,8 @@ def photon_transport(n_photons, tau_max, mu_bins, albedo):
 
 n_photons = int(10e3)
 tau_max = 7
-mu_bins = 10
-albedo = 1
+mu_bins = 30
+albedo = 0.5
 
 # MCRT simulation
 theta, intensity, energy = photon_transport(n_photons, tau_max, mu_bins,
@@ -261,9 +263,9 @@ plt.ylim(0)
 plt.show()
 
 # plot the energy absorbed against angle
-plt.figure(figsize=(10, 8))
-plt.plot(theta, energy, 'kx')
-plt.xlabel(r'Angle, $\theta$')
-plt.xlim(0, 90)
-plt.ylim(0)
-plt.show()
+# plt.figure(figsize=(10, 8))
+# plt.plot(theta, energy, 'kx')
+# plt.xlabel(r'Angle, $\theta$')
+# plt.xlim(0, 90)
+# plt.ylim(0)
+# plt.show()

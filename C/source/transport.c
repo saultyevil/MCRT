@@ -2,8 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#if defined (_OPENMP)
+    #include <omp.h>
+#endif
+
+#include "plane_variables.h"
+#include "plane_functions.h"
 
 /** @brief Controls the MCRT simulation.
  *
@@ -12,39 +16,60 @@ int start_mcrt(void)
 {
     int total_inters = 0;
 
-    Photon *packet = malloc(sizeof(Photon));
-    Photon_hist *hist = malloc(sizeof(Photon_hist));
-    Moments *moments = malloc(sizeof(Moments));
+    #if defined(_OPENMP)
+        int omp_counter = 0;
+    #endif
 
-    init_photon_hist(hist);
-    init_jhk(moments);
+    Photon packet;
+    Photon_hist hist;
+    Moments moments;
 
+    init_photon_hist(&hist);
+    init_jhk(&moments);
+
+    #pragma omp parallel for default(none), \
+        schedule(dynamic), \
+        shared(n_photons, hist, moments, output_freq, omp_counter), \
+        private(packet), \
+        reduction(+:total_inters)
     for (int photon_count = 1; photon_count <= n_photons; photon_count++)
     {
-        emit_photon(packet);
-        transport_photon_const_rho(packet, moments);
-        total_inters += packet->n_inters;
+        emit_photon(&packet);
+        transport_photon_const_rho(&packet, &moments);
+        total_inters += packet.n_inters;
 
-        if (packet->absorb == FALSE)
-            bin_photon(hist, packet->cos_theta);
+        if (packet.absorb == FALSE)
+            bin_photon(&hist, packet.cos_theta);
 
-        if (photon_count % output_freq == 0)
-            printf("%6.0d photon packets transported (%3.0f%%)\n",
-            photon_count, (double) photon_count/n_photons * 100);
+        /*
+         * Implement a very primitive progress bar if OpenMP is enabled, it may
+         * degrade performance due to the critical section.
+         */
+        #if defined(_OPENMP)
+            #pragma omp atomic
+                omp_counter += 1;
+
+            #pragma omp critical
+            {
+                if (omp_counter % output_freq == 0)
+                    printf("%6.0d photon packets transported (%3.0f%%)\n",
+                            omp_counter, (double) omp_counter/n_photons * 100);
+            }
+        #else
+            if (photon_count % output_freq == 0)
+                printf("%6.0d photon packets transported (%3.0f%%)\n",
+                       photon_count, (double) photon_count/n_photons * 100);
+        #endif
     }
-
-    free(packet);
 
     double *intens = malloc(sizeof(*intens) * mu_bins);
 
-    calculate_intensity(hist, intens);
-    write_to_file(hist, moments, intens);
+    calculate_intensity(&hist, intens);
+    write_to_file(&hist, &moments, intens);
 
     free(intens);
-    free(hist->bins); free(hist->theta); free(hist);
-    free(moments->j_plus); free(moments->h_plus); free(moments->k_plus);
-    free(moments->j_minus); free(moments->h_minus); free(moments->k_minus);
-    free(moments);
+    free_moment_arrays(&moments);
+    free_mu_hist(&hist);
 
     int average_inters = (int) ((double) total_inters/n_photons);
     printf("\nAverage photon interactions to escape: %d.\n", average_inters);
@@ -62,7 +87,7 @@ int transport_photon_const_rho(Photon *packet, Moments *moments)
 
     while (packet->z >= 0.0 && packet->z <= 1.0)
     {
-        double tau = -1.0 * log(gsl_rand_num(0, 1));
+        double tau = -1.0 * log(1-gsl_rand_num(0, 1));
         double L = tau/tau_max;
 
         /*
@@ -75,7 +100,7 @@ int transport_photon_const_rho(Photon *packet, Moments *moments)
         packet->y += L * packet->sin_theta * packet->sin_phi;
         packet->z += L * packet->cos_theta;
 
-        // calculate_moments(packet, moments, zz);
+        calculate_moments(packet, moments, zz);
 
         /*
          * If z < 0, the photon has gone back into the atmosphere, therefore we

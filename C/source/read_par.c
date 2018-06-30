@@ -2,8 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#if defined(_OPENMP)
+    #include <omp.h>
+#endif
+
+#include "plane_variables.h"
+#include "plane_functions.h"
 
 /** @brief Read in parameters from an input file or from the user.
  *
@@ -44,15 +48,23 @@ int get_parameters(char *ini_file)
  */
 int print_parameters(void)
 {
-    printf("\nParameters:\n");
-    printf("-----------\n\n");
+    printf("-------------\n");
+    printf(" Parameters:\n");
+    printf("-------------\n\n");
     printf("N_PHOTONS      : %d\n", n_photons);
     printf("MU_BINS        : %d\n", mu_bins);
     printf("N_LEVELS       : %d\n", n_levels);
     printf("OUTPUT_FREQ    : %d\n", output_freq);
     printf("TAU_MAX        : %4.3f\n", tau_max);
     printf("ALBEDO         : %4.3f\n\n", albedo);
-    printf("-----------\n\n");
+
+    #if defined(_OPENMP)
+        int n_threads = omp_get_max_threads();
+        printf("Using OpenMP to parallelise Monte Carlo iterations.\n");
+        printf("N_THREADS: %d\n\n", n_threads);
+    #endif
+
+    printf("-------------\n\n");
 
     return 0;
 }
@@ -161,11 +173,14 @@ int read_int(char *ini_file, char *par_name, int *parameter)
      */
     if (*parameter == NO_PAR_CONST)
     {
+        char par_default[MAX_LINE];
+
         printf("!! Parameter '%s' not found in '%s'.", par_name, ini_file);
         printf(" Looking for a default value.\n");
-        char par_default[MAX_LINE];
+
         default_param_values(par_name, par_default, FALSE);
         *parameter = atoi(par_default);
+
         printf("!! Default value of '%s' found for parameter '%s'.\n\n",
                par_default, par_name);
     }
@@ -210,94 +225,94 @@ int get_int_CL(char *par_name, int *parameter)
 /** @brief Read in the simulation parameters from file.
  *
  */
-int get_parameters_OLD(char *ini_file)
-{
-    int no_par_flag = FALSE;
-    char line[MAX_LINE], par_name[MAX_LINE], separator[MAX_LINE];
-    char par_value[MAX_LINE];
+// int get_parameters_OLD(char *ini_file)
+// {
+//     int no_par_flag = FALSE;
+//     char line[MAX_LINE], par_name[MAX_LINE], separator[MAX_LINE];
+//     char par_value[MAX_LINE];
 
-    /*
-     * Set default values for the parameters to read in from file
-     */
-    mu_bins = 10;
-    n_photons = 1000000;
-    n_levels = 10;
-    output_freq = 100000;
-    tau_max = 5.0;
-    albedo = 1.0;
+//     /*
+//      * Set default values for the parameters to read in from file
+//      */
+//     mu_bins = 10;
+//     n_photons = 1000000;
+//     n_levels = 10;
+//     output_freq = 100000;
+//     tau_max = 5.0;
+//     albedo = 1.0;
 
-    FILE *par_file_ptr;
+//     FILE *par_file_ptr;
 
-    if ((par_file_ptr = fopen(ini_file, "r")) == NULL)
-    {
-        printf("Cannot open parameter file '%s'.\n", ini_file);
-        exit(-1);
-    }
+//     if ((par_file_ptr = fopen(ini_file, "r")) == NULL)
+//     {
+//         printf("Cannot open parameter file '%s'.\n", ini_file);
+//         exit(-1);
+//     }
 
-    int line_num = 0;
+//     int line_num = 0;
 
-    printf("Parameters:\n");
-    printf("-----------\n\n");
+//     printf("Parameters:\n");
+//     printf("-----------\n\n");
 
-    while (fgets(line, MAX_LINE, par_file_ptr) != NULL)
-    {
-        line_num += 1;
+//     while (fgets(line, MAX_LINE, par_file_ptr) != NULL)
+//     {
+//         line_num += 1;
 
-        if (line[0] == '#' || line[0] == '\r')
-        {
-            continue;
-        }
+//         if (line[0] == '#' || line[0] == '\r')
+//         {
+//             continue;
+//         }
 
-        if (sscanf(line, "%s %s %s", par_name, separator, par_value) != 3)
-        {
-            printf("\n---------------------\n");
-            printf("Snytax error: line %d.\n", line_num);
-            printf("---------------------\n\n");
-            continue;
-        }
+//         if (sscanf(line, "%s %s %s", par_name, separator, par_value) != 3)
+//         {
+//             printf("\n---------------------\n");
+//             printf("Snytax error: line %d.\n", line_num);
+//             printf("---------------------\n\n");
+//             continue;
+//         }
 
-        if (strcmp(par_name, "N_PHOTONS") == 0)
-        {
-            n_photons = atoi(par_value);
-        }
-        else if (strcmp(par_name, "MU_BINS") == 0)
-        {
-            mu_bins = atoi(par_value);
-        }
-        else if (strcmp(par_name, "N_LEVELS") == 0)
-        {
-            n_levels = atoi(par_value);
-        }
-        else if (strcmp(par_name, "OUTPUT_FREQ") == 0)
-        {
-            output_freq = atoi(par_value);
-        }
-        else if (strcmp(par_name, "TAU_MAX") == 0)
-        {
-            tau_max = (double) atof(par_value);
-        }
-        else if (strcmp(par_name, "ALBEDO") == 0)
-        {
-            albedo = (double) atof(par_value);
-        }
-        else
-        {
-            printf("Parameter '%s' on line %d not recognised.\n",
-                par_name, line_num);
-            no_par_flag = TRUE;
-        }
+//         if (strcmp(par_name, "N_PHOTONS") == 0)
+//         {
+//             n_photons = atoi(par_value);
+//         }
+//         else if (strcmp(par_name, "MU_BINS") == 0)
+//         {
+//             mu_bins = atoi(par_value);
+//         }
+//         else if (strcmp(par_name, "N_LEVELS") == 0)
+//         {
+//             n_levels = atoi(par_value);
+//         }
+//         else if (strcmp(par_name, "OUTPUT_FREQ") == 0)
+//         {
+//             output_freq = atoi(par_value);
+//         }
+//         else if (strcmp(par_name, "TAU_MAX") == 0)
+//         {
+//             tau_max = (double) atof(par_value);
+//         }
+//         else if (strcmp(par_name, "ALBEDO") == 0)
+//         {
+//             albedo = (double) atof(par_value);
+//         }
+//         else
+//         {
+//             printf("Parameter '%s' on line %d not recognised.\n",
+//                 par_name, line_num);
+//             no_par_flag = TRUE;
+//         }
 
-        if (no_par_flag == FALSE)
-            printf("%s  ::  %s\n", par_name, par_value);
-    }
+//         if (no_par_flag == FALSE)
+//             printf("%s  ::  %s\n", par_name, par_value);
+//     }
 
-    printf("\n-----------\n\n");
+//     printf("\n-----------\n\n");
 
-    if (fclose(par_file_ptr) != 0)
-    {
-        printf("Cannot close parameter file '%s'.\n", ini_file);
-        exit(-1);
-    }
+//     if (fclose(par_file_ptr) != 0)
+//     {
+//         printf("Cannot close parameter file '%s'.\n", ini_file);
+//         exit(-1);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }

@@ -10,6 +10,8 @@
  */
 int default_param_values(char *par_name, char *par_value_string, int double_sw)
 {
+    int i = 0;
+
     char *params[] =
         {"MU_BINS", "N_PHOTONS", "N_LEVELS", "OUTPUT_FREQ", "TAU_MAX",
          "ALBEDO", NULL};
@@ -17,7 +19,6 @@ int default_param_values(char *par_name, char *par_value_string, int double_sw)
     char *default_values[] =
         {"30", "1000000", "10", "100000", "5.0", "1.0", NULL};
 
-    int i = 0;
     par_value_string[0] = NO_PAR_CONST_STRING;
 
     while (params[i] != NULL)

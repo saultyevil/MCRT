@@ -8,14 +8,14 @@ theta_deg = theta[:] * 180/np.pi
 counts = data[:, 1]
 intensity = data[:, 2]
 
-fig = plt.figure(figsize=(16, 8))
-ax1 = fig.add_subplot(121)
-ax1.semilogy(theta_deg, intensity, "k-")
-ax1.set_xlabel(r"Angle, $\theta$")
-ax1.set_ylabel("Normalised Intensity")
-ax1.set_xlim(0, 90)
+fig = plt.figure(figsize=(8, 8))
+# ax1 = fig.add_subplot(121)
+# ax1.semilogy(theta_deg, intensity, "k-")
+# ax1.set_xlabel(r"Angle, $\theta$")
+# ax1.set_ylabel("Normalised Intensity")
+# ax1.set_xlim(0, 90)
 
-ax2 = fig.add_subplot(122)
+ax2 = fig.add_subplot(111)
 ax2.semilogy(np.cos(theta), intensity, "k-")
 ax2.set_xlabel(r"$\mu=\cos(\theta)$")
 ax2.set_ylabel("Normalised Intensity")

@@ -3,12 +3,18 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "plane_Variables.h"
-#include "plane_Functions.h"
+#include <omp.h>
+
+#include "plane_variables.h"
+#include "plane_functions.h"
 
 int main(int argc, char *argv[])
 {
     char *ini_file;
+    time_t start,
+           stop;
+
+
 
     printf("\nBeginning simulation...\n");
     print_time();
@@ -26,7 +32,7 @@ int main(int argc, char *argv[])
     }
 
     /*
-     * Initialise the random seed using the clock for now.
+     * Initialise the random seed -- using the clock for now.
      */
     init_seed(time(NULL));
 
@@ -35,12 +41,11 @@ int main(int argc, char *argv[])
      */
     get_parameters(ini_file);
 
-    time_t start = time(NULL);
+    start = time(NULL);
     start_mcrt();
+    stop = time(NULL);
 
-    time_t stop = time(NULL);
-
-    printf("\nSimulation completed.\nMonte Carlo run time: %3.2f s.\n",
+    printf("\nSimulation completed.\nMonte Carlo run time: ~%3.2f s.\n\n",
            difftime(stop, start));
 
     return 0;
