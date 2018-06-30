@@ -9,8 +9,8 @@
  */
 int init_photon_hist(Photon_hist *hist)
 {
-    double d_theta = 1.0/mu_bins;
-    double half_width = 0.5 * d_theta;
+    double d_theta = 1.0/mu_bins,
+           half_width = 0.5 * d_theta;
 
     hist->bins = malloc(sizeof(hist->bins) * mu_bins);
     hist->theta = malloc(sizeof(hist->theta) * mu_bins);

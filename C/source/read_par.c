@@ -74,8 +74,10 @@ int print_parameters(void)
  */
 int read_double(char *ini_file, char *par_name, double *parameter)
 {
-    char line[MAX_LINE], ini_par_name[MAX_LINE], par_separator[MAX_LINE];
-    char par_value[MAX_LINE];
+    char line[MAX_LINE],
+         ini_par_name[MAX_LINE],
+         par_separator[MAX_LINE],
+         par_value[MAX_LINE];
 
     FILE *par_file_ptr;
 
@@ -135,8 +137,10 @@ int read_double(char *ini_file, char *par_name, double *parameter)
  */
 int read_int(char *ini_file, char *par_name, int *parameter)
 {
-    char line[MAX_LINE], ini_par_name[MAX_LINE], par_separator[MAX_LINE];
-    char par_value[MAX_LINE];
+    char line[MAX_LINE],
+         ini_par_name[MAX_LINE],
+         par_separator[MAX_LINE],
+         par_value[MAX_LINE];
 
     FILE *par_file_ptr;
 

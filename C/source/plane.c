@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <omp.h>
-
 #include "plane_vars.h"
 #include "plane_funcs.h"
 
