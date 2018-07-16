@@ -1,18 +1,38 @@
-#include <stdlib.h>
-#include <string.h>
+/* ************************************************************************** */
+/** @file plane.c
+ *  @author Edward Parkinson
+ *  @date 12 July 2018
+ *
+ *  @brief Contains the main function.
+ *
+ * ************************************************************************** */
+
 #include <stdio.h>
 #include <time.h>
 
 #include "plane_vars.h"
 #include "plane_funcs.h"
 
+/* ************************************************************************** */
+/** main
+ *
+ *  @brief The main function for, mostly, controlling the flow of the program.
+ *
+ *  @param[in] int argc. Number of arguments provided.
+ *  @param[int] char *argv[]. The arguments provided.
+ *
+ *  @return 0.
+ *
+ *  @details
+ *
+ *  Controls the flow of the program.
+ *
+ * ************************************************************************** */
+
 int main(int argc, char *argv[])
 {
     char *ini_file;
-    time_t start,
-           stop;
-
-
+    time_t start, stop;
 
     printf("\nBeginning simulation...\n");
     print_time();
@@ -30,21 +50,25 @@ int main(int argc, char *argv[])
     }
 
     /*
-     * Initialise the random seed -- using the clock for now.
-     */
-    init_seed(time(NULL));
-
-    /*
-     * Get the simulation parameters from file and start the MCRT procedure
+     * Get the parameters from file
      */
     get_parameters(ini_file);
 
+    /*
+     * Initialise the random seed -- using the clock for now.
+     */
+    init_gsl_seed(seed);
+
+    /*
+     * Start the MCRT procedure
+     */
     start = time(NULL);
     start_mcrt();
     stop = time(NULL);
 
-    printf("\nSimulation completed.\nMonte Carlo run time: ~%3.2f s.\n\n",
+    printf("\nMonte Carlo run time: ~%3.2f s.\nSimulation completed.\n",
            difftime(stop, start));
+    printf("\n-------------\n\n");
 
     return 0;
 }

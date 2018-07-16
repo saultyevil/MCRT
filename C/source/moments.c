@@ -1,3 +1,13 @@
+/* ************************************************************************** */
+/** @file moments.c
+ *  @author Edward Parkinson
+ *  @date 12 July 2018
+ *
+ *  @brief Contains functions for initialising and caulcating the moments of the
+ *  radiation field during the monte carlo interations.
+ *
+ * ************************************************************************** */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -5,73 +15,116 @@
 #include "plane_vars.h"
 #include "plane_funcs.h"
 
-/** @brief Calculate the photon's contribution to the moments of the radiation
- *         field.
+/* ************************************************************************** */
+/** calculate_moments
  *
- */
-int calculate_moments(Photon *packet, Moments *moments, double z2)
+ *  @brief Calculate the value of the moments of the radiation field at n_levels
+ *  positions.
+ *
+ *  @param[in, out] JHK_Moments *moments. A pointer to a JHK_Moments which will
+ *  be updated.
+ *  @param[in] double z_pre_scat. The original position before a photon has been
+ *  translated a length ds.
+ *  @param[in] double z_post_scat. The updated position after the photon has
+ *  been translated a length ds.
+ *  @param[in] double cos_theta. The cosine of the theta direction of the
+ *  photon.
+ *
+ *  @return 0
+ *
+ *  @details
+ *
+ *  Calculates the moments of the radiation field at each level specified by
+ *  n_levels + 1.
+ *
+ *      * J - Mean Intensity
+ *      * H - Eddington Flux
+ *      * K - Radiation Pressure
+ *
+ *  The function calculates which level the the pre and post scattering
+ *  positions corresponds to and increments the count with the relevant
+ *  quantatiy.
+ *
+ * ************************************************************************** */
+
+int calculate_moments(JHK_Moments *moments, double z_pre_scat,
+    double z_post_scat, double cos_theta)
 {
-    int level1 = 0,
-        level2 = 0;
-    double z1 = packet->z;
+    int pre_scat_level_ele = 0,
+        post_scat_level_ele = 0;
 
-    if ((z1 > 0) && (z2 > 0) && ((int) (z1*n_levels) == (int) (z2*n_levels)))
-        return 0;
-
-    if (packet->cos_theta > 0)
+    if ( (z_pre_scat > 0) && (z_post_scat > 0) && \
+        (((int) (z_pre_scat * n_levels)) == ((int) (z_post_scat * n_levels))))
     {
-        if (z1 < 0)
-            level1 = 1;
-        else
-            level1 = (int) (z1 * n_levels) + 2;
-        if (z2 > 1)
-            level2 = n_levels + 1;
-        else
-            level2 = (int) (z2 * n_levels) + 1;
+        return 0;
+    }
 
-        // printf("up: level1\t %d\t level2\t %d\n", level1, level2);
-        for (int i = level1; i < level1; i++)
+    if (cos_theta > 0)
+    {
+        if (z_pre_scat <= 0)
+            pre_scat_level_ele = 0;
+        else
+            pre_scat_level_ele = (int) (z_pre_scat * n_levels) + 1;
+
+        if (z_post_scat >= 1)
+            post_scat_level_ele = n_levels;
+        else
+            post_scat_level_ele = (int) (z_post_scat * n_levels);
+
+        for (int i = pre_scat_level_ele; i <= post_scat_level_ele; i++)
         {
-            moments->j_plus[i] += 1/packet->cos_theta;
+            moments->j_plus[i] += 1.0/cos_theta;
             moments->h_plus[i] += 1;
-            moments->k_plus[i] += packet->cos_theta;
+            moments->k_plus[i] += cos_theta;
         }
     }
-    else if (packet->cos_theta < 0)
+    else if (cos_theta < 0)
     {
-        level1 = (int) (z1 * n_levels) + 1;
+        pre_scat_level_ele = (int) (z_pre_scat * n_levels);
 
-        if (z2 < 0)
-            level2 = 1;
+        if (z_post_scat <= 0)
+            post_scat_level_ele = 0;
         else
-            level2 = (int) (z2 * n_levels) + 2;
+            post_scat_level_ele = (int) (z_post_scat * n_levels) + 1;
 
-        // printf("do: level1\t %d\t level2\t %d\n", level1, level2);
-        for (int i = level2; i < level1; i++)
+        for (int i = post_scat_level_ele; i <= pre_scat_level_ele; i++)
         {
-            moments->j_minus[i] += 1/fabs(packet->cos_theta);
+            moments->j_minus[i] += 1.0/fabs(cos_theta);
             moments->h_minus[i] -= 1;
-            moments->k_minus[i] += fabs(packet->cos_theta);
+            moments->k_minus[i] += fabs(cos_theta);
         }
     }
 
     return 0;
 }
 
-/** @brief Initialise the moments array for the Moments data type.
+/* ************************************************************************** */
+/** init_jhk
  *
- */
-int init_jhk(Moments *moments)
+ *  @brief Intialise the pointers in an uninitialised JHK_Moments struct.
+ *
+ *  @param[in, out] JHK_Moments *moments. An uninitialised JHK_Moments struct.
+ *
+ *  @return 0
+ *
+ *  @details
+ *
+ *  Allocates memory for all pointeres in a JHK_Moments struct with n_levels
+ *  elements. All elements are then zeroed as they're all essentially photon
+ *  counters.
+ *
+ * ************************************************************************** */
+
+int init_jhk(JHK_Moments *moments)
 {
+    moments->j_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->h_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->k_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->j_minus = malloc(sizeof(double) * (n_levels + 1));
+    moments->h_minus = malloc(sizeof(double) * (n_levels + 1));
+    moments->k_minus = malloc(sizeof(double) * (n_levels + 1));
 
-    moments->j_plus = malloc(sizeof(*moments->j_plus) * n_levels);
-    moments->h_plus = malloc(sizeof(*moments->h_plus) * n_levels);
-    moments->k_plus = malloc(sizeof(*moments->k_plus) * n_levels);
-    moments->j_minus = malloc(sizeof(*moments->j_minus) * n_levels);
-    moments->h_minus = malloc(sizeof(*moments->h_minus) * n_levels);
-    moments->k_minus = malloc(sizeof(*moments->k_minus) * n_levels);
-
-    for (int i = 0; i < n_levels; i++)
+    for (int i = 0; i < n_levels + 1; i++)
     {
         moments->j_plus[i] = 0.0;
         moments->h_plus[i] = 0.0;
