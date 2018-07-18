@@ -12,10 +12,10 @@ class Photon_Packet(object):
         self._coords = np.array([0, 0, 0], dtype=np.float)
         self._costheta = np.sqrt(np.random.rand())
         self._sintheta = np.sqrt(1 - self._costheta ** 2)
-        self._cosphi = np.cos( 2 * np.pi * np.random.rand())
+        self._cosphi = np.cos(2 * np.pi * np.random.rand())
         self._sinphi = np.sqrt(1 - self._cosphi ** 2)
         self._escaped = False
-        
+
         return None
 
     def _scatter_packet(self):
@@ -27,7 +27,7 @@ class Photon_Packet(object):
         self._sintheta = np.sqrt(1 - self._costheta ** 2)
         self._cosphi = np.cos(2 * np.pi * np.random.rand())
         self._sinphi = np.sqrt(1 - self._cosphi ** 2)
-        
+
         return 0
 
     def _transport_packet(self, tau_max, albedo):
@@ -35,14 +35,13 @@ class Photon_Packet(object):
         Transport the photon packets through the atmosphere.
         """
         while self._coords[2] >= 0 and self._coords[2] <= 1:
-            # sample a random optical depth and update the position of the 
+            # sample a random optical depth and update the position of the
             # packet
             tau = -np.log(np.random.rand())
             L = tau/tau_max
             self._coords[0] += L * self._sintheta * self._cosphi
             self._coords[1] += L * self._sintheta * self._sinphi
             self._coords[2] += L * self._costheta
-
             # if z < 0, the photon has travelled deeper into the atmosphere
             # and is lost, hence restart the photon
             if self._coords[2] < 0:
@@ -57,8 +56,9 @@ class Photon_Packet(object):
                     self._scatter_packet()
                 else:
                     break
-                
+
         return 0
+
 
 def init_photon_bins(mu_bins):
     """
@@ -72,7 +72,7 @@ def init_photon_bins(mu_bins):
     Returns
     -------
     mu_hist: (1 x mu_bins) array of ints.
-        An array of 0's.    
+        An array of 0's.
     theta: (1 x mu_bins) array of floats.
         The binned theta angles.
     """
@@ -86,13 +86,14 @@ def init_photon_bins(mu_bins):
 
     return mu_hist, theta
 
+
 def bin_photon(cos_theta, mu_bins, mu_hist):
     """
     Bin a photon into the appropriate theta bin
     """
     i = abs(int(cos_theta * mu_bins))
     mu_hist[i] += 1
-    
+
     return mu_hist
 
 
@@ -127,49 +128,49 @@ def photon_intensity(mu_bins, mu_hist, theta, n_photons):
 # =============================================================================
 # Simulation
 # =============================================================================
+if __name__ == "__main__":
+    print('Beginning Simulation...\n')
 
-print('Beginning Simulation...\n')
+    # Simulation Parameters
+    n_photons = int(10e6)
+    mu_bins = 45
+    tau_max = 3
+    albedo = 0.5
+    output_freq = int(10e5)
 
-# Simulation Parameters
-n_photons = int(10e6)
-mu_bins = 45
-tau_max = 3
-albedo = 0.5
-output_freq = int(10e5)
+    start = timeit.default_timer()
+    mu = np.zeros(n_photons)
+    phi = np.zeros(n_photons)
+    mu_hist, theta = init_photon_bins(mu_bins)
 
-start = timeit.default_timer()
-mu = np.zeros(n_photons)
-phi = np.zeros(n_photons)
-mu_hist, theta = init_photon_bins(mu_bins)
+    for packet in range(n_photons):
+        photon_packet = Photon_Packet()
+        photon_packet._transport_packet(tau_max, albedo)
+        if photon_packet._escaped is True:
+            mu_hist = bin_photon(photon_packet._costheta, mu_bins, mu_hist)
+        if ((packet + 1) % output_freq == 0):
+            percent_complete = 100 * (packet + 1)/n_photons
+            print('{} photons ({:3.1f}%) transported.'
+                  .format(packet + 1, percent_complete))
 
-for packet in range(n_photons):
-    photon_packet = Photon_Packet()
-    photon_packet._transport_packet(tau_max, albedo)
-    if photon_packet._escaped is True:
-        mu_hist = bin_photon(photon_packet._costheta, mu_bins, mu_hist)
-    if ((packet + 1) % output_freq == 0):
-        percent_complete = 100 * (packet + 1)/n_photons
-        print('{} photons ({:3.1f}%) transported.'
-              .format(packet + 1, percent_complete))
-        
-intensity = photon_intensity(mu_bins, mu_hist, theta, n_photons)
-stop = timeit.default_timer()
+    intensity = photon_intensity(mu_bins, mu_hist, theta, n_photons)
+    stop = timeit.default_timer()
 
-print('\nTransport of {} packets completed in {:3.2f} seconds.'
-      .format(n_photons, stop - start))
+    print('\nTransport of {} packets completed in {:3.2f} seconds.'
+          .format(n_photons, stop - start))
 
 # =============================================================================
 # Plots
 # =============================================================================
 
-fig = plt.figure(figsize=(17, 8))
+    fig = plt.figure(figsize=(17, 8))
 
-# plot the intensity against angle
-ax1 = fig.add_subplot(121)
-ax1.plot(theta, intensity, 'kx')
-ax1.set_xlabel(r'$cos(\theta)$')
-ax1.set_ylabel(r'Normalised Intensity')
-ax1.set_xlim(0, 0.5 * np.pi)
+    # plot the intensity against angle
+    ax1 = fig.add_subplot(121)
+    ax1.plot(theta, intensity, 'kx')
+    ax1.set_xlabel(r'$cos(\theta)$')
+    ax1.set_ylabel(r'Normalised Intensity')
+    ax1.set_xlim(0, 0.5 * np.pi)
 
-plt.savefig('mcrt_plane.pdf')
-plt.show()
+    plt.savefig('mcrt_plane.pdf')
+    plt.show()
