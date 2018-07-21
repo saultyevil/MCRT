@@ -18,10 +18,9 @@
 /* ************************************************************************** */
 /** init_photon_hist
  *
- *  @brief Calculate the photon escape angle bin values and initialise all of
- *  the bin counts to 0.
+ *  @brief Initialise a Mu_hist structure with the escape angles.
  *
- *  @param[in, out] Mu_hist *hist. A pointer to an uninitialised Mu_hist
+ *  @param[in, out] Mu_hist *hist. Pointer to an uninitialised Mu_hist
  *  struct.
  *
  *  @return 0
@@ -29,8 +28,8 @@
  *  @details
  *
  *  Takes in an uninitialised Mu_hist struct, allocates memory for the
- *  pointers within the struct with mu_bin elements and then calculates the
- *  bin's escape angle value and sets the count to 0.
+ *  pointers within the struct with mu_bin elements and calculates the
+ *  bin's escape angle value and sets the bin counts to 0.
  *
  * ************************************************************************** */
 
@@ -54,21 +53,20 @@ int init_photon_hist(Mu_hist *hist)
 /* ************************************************************************** */
 /** bin_photon
  *
- *  @brief Increment the counter for a photon escape angle.
+ *  @brief Increment the escape angle bin counter.
  *
  *  @param[in, out] Mu_hist *hist. An initialised Mu_hist struct.
+ *
  *  @param[in] double cos_theta. A photon's escape angle, mu = cos(theta).
  *
  *  @return 0.
  *
  *  @details
  *
- *  Takes in an initialised Mu_hist struct and a photon's escape angle. The
- *  escape angle is convereted into a binned angle and then the relevant bin
- *  counter is incremented by 1.
+ *  Converts the photon's escape angle into a binned angle index and increments
+ *  the bin count by 1 for that escape angle.
  *
  * ************************************************************************** */
-
 int bin_photon(Mu_hist *hist, double cos_theta)
 {
     int bin_index = abs((int) (cos_theta * mu_bins));
@@ -80,19 +78,22 @@ int bin_photon(Mu_hist *hist, double cos_theta)
 /* ************************************************************************** */
 /** calculate_intensity
  *
- *  @brief Calculate the normalised(?) intensity for the binned escape angles.
+ *  @brief Calculate the flux normalised intensity of each binned angle.
  *
- *  @param[in] Mu_hist *hist. An initialised Mu_hist struct after the monte
- *  carlo iterations have been completed.
- *  @param[in, out] double *intensity. A pointer to an array of mu_bins elements
- *  which will contain the intensity of each binned angle.
+ *  @param[in] Mu_hist *hist. An initialised Mu_hist struct after the MC
+ *  iterations have been completed.
+ *
+ *  @param[in, out] double *intensity. A pointer to an empty array with mu_bins
+ *  elements.
  *
  *  @return 0
  *
  *  @details
  *
- *  Takes in a Mu_hist struct after the monte carlo iterations are all complete
- *  and calculates the normalised intensity of each binned photon escape angle.
+ *  The idea behind calculating the intensity at the various binned angles is
+ *  to count the escaped photons at that bin. Thus by doing this, and diving by
+ *  the number of photons, the flux normalised intensity of the escape angles
+ *  is easily calculated.
  *
  * ************************************************************************** */
 

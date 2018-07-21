@@ -19,6 +19,7 @@
  *  @brief Write the intensity of the binned escaped angles to file.
  *
  *  @param[in] Mu_hist *hist. An Mu_hist struct after the MCRT iterations.
+ *
  *  @param[in] double *intensity. The intensity for eached binned escape angle.
  *
  *  @return 0
