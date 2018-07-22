@@ -39,9 +39,9 @@
 
 int isotropic_emit_photon(Photon *packet)
 {
-    double mu, phi;
+    double theta, phi;
 
-    random_cost_phi(&mu, &phi);
+    random_theta_phi(&theta, &phi);
 
     packet->x = 0.0;
     packet->y = 0.0;
@@ -114,9 +114,6 @@ int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
 {
     double ds, xi, z_orig;
 
-    /*
-     * Emit a photon packet isotropically at the origin of the slab
-     */
     isotropic_emit_photon(packet);
 
     while (packet->z >= 0.0 && packet->z <= 1.0)
@@ -125,14 +122,8 @@ int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
         ds = random_tau()/tau_max;
         photon_pos_step(packet, ds);
 
-        /*
-         *  Calculate the moments of the radiation field, J, H and K
-         */
         calculate_moments(moments, z_orig, packet->z, packet->cos_theta);
 
-        /*
-         * If z < 0, emit another packet and hopefully this one escapes!!
-         */
         if (packet->z < 0.0)
         {
             isotropic_emit_photon(packet);
@@ -195,7 +186,7 @@ int start_mcrt(void)
     init_jhk(&moments);
 
     #pragma omp parallel for default(none), \
-        schedule(static), \
+        schedule(dynamic), \
         shared(n_photons, hist, moments, output_freq, omp_counter), \
         private(packet), \
         reduction(+:total_inters)

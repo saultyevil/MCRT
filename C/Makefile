@@ -1,10 +1,10 @@
 # Helpful macros
-TARGET_EXEC ?= plane
-OBJ_DIR ?= ./objects
-SRC_DIRS ?= ./source
+TARGET_EXEC ?= run/plane
+OBJ_DIR ?= ./obj
+SRC_DIRS ?= ./src
 
 # Macros for CC
-CC = gcc-8
+CC = gcc
 CFLAGS = -pedantic -Wall -fopenmp
 LIBS = -lm -lgsl -lgslcblas -fopenmp
 
