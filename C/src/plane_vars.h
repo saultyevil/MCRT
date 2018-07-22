@@ -122,10 +122,6 @@ double albedo;
  *  Set to TRUE if a photon is absorbed.
  *  @var Photon::n_inters
  *  Counter for the number of interactions the photon has undergone.
- *  @var Photon::mrw_steps
- *  Counter for the number of MRW steps the photon has undergone.
- *  @var Photon::mrw_scatter_count
- *  Counter for the number of scatters between MRW transport steps.
  *  @var Photon::x
  *  The x position of the photon.
  *  @var Photon::y

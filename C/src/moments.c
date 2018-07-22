@@ -3,8 +3,8 @@
  *  @author Edward Parkinson
  *  @date 12 July 2018
  *
- *  @brief Contains functions for initialising and caulcating the moments of the
- *  radiation field during the monte carlo interations.
+ *  @brief Contains functions for initialising and calculating the moments of
+ *  the radiation field during the MC iterations.
  *
  * ************************************************************************** */
 
@@ -16,17 +16,58 @@
 #include "plane_funcs.h"
 
 /* ************************************************************************** */
+/** init_jhk
+ *
+ *  @brief Initialise a JHK_Moments structure.
+ *
+ *  @param[in, out] JHK_Moments *moments. An uninitialised JHK_Moments struct.
+ *
+ *  @return 0
+ *
+ *  @details
+ *
+ *  Allocates memory for the pointers in a JHK_Moments struct with n_levels + 1
+ *  elements. The elements of these arrays are initialised to zero. Calloc may
+ *  have been a better alternative here than malloc followed by a loop.
+ *
+ * ************************************************************************** */
+
+int init_jhk(JHK_Moments *moments)
+{
+    moments->j_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->h_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->k_plus = malloc(sizeof(double) * (n_levels + 1));
+    moments->j_minus = malloc(sizeof(double) * (n_levels + 1));
+    moments->h_minus = malloc(sizeof(double) * (n_levels + 1));
+    moments->k_minus = malloc(sizeof(double) * (n_levels + 1));
+
+    for (int i = 0; i < n_levels + 1; i++)
+    {
+        moments->j_plus[i] = 0.0;
+        moments->h_plus[i] = 0.0;
+        moments->k_plus[i] = 0.0;
+        moments->j_minus[i] = 0.0;
+        moments->h_minus[i] = 0.0;
+        moments->k_minus[i] = 0.0;
+    }
+
+    return 0;
+}
+
+/* ************************************************************************** */
 /** calculate_moments
  *
- *  @brief Calculate the value of the moments of the radiation field at n_levels
- *  positions.
+ *  @brief Update the value of the moments of the radiation field.
  *
- *  @param[in, out] JHK_Moments *moments. A pointer to a JHK_Moments which will
- *  be updated.
+ *  @param[in, out] JHK_Moments *moments. A pointer to an initialised
+ *  JHK_Moments structure.
+ *
  *  @param[in] double z_pre_scat. The original position before a photon has been
- *  translated a length ds.
+ *  transported a length ds.
+ *
  *  @param[in] double z_post_scat. The updated position after the photon has
- *  been translated a length ds.
+ *  been transported a length ds.
+ *
  *  @param[in] double cos_theta. The cosine of the theta direction of the
  *  photon.
  *
@@ -43,7 +84,11 @@
  *
  *  The function calculates which level the the pre and post scattering
  *  positions corresponds to and increments the count with the relevant
- *  quantatiy.
+ *  quantity. Upwards and downwards directions are calculated separately, thus
+ *  the final value will be the sum of the upwards and downwards direction.
+ *
+ *  The moments are calculated essentially by photon counters, i.e. it counts
+ *  how many times photons pass through this level.
  *
  * ************************************************************************** */
 
@@ -98,41 +143,4 @@ int calculate_moments(JHK_Moments *moments, double z_pre_scat,
     return 0;
 }
 
-/* ************************************************************************** */
-/** init_jhk
- *
- *  @brief Intialise the pointers in an uninitialised JHK_Moments struct.
- *
- *  @param[in, out] JHK_Moments *moments. An uninitialised JHK_Moments struct.
- *
- *  @return 0
- *
- *  @details
- *
- *  Allocates memory for all pointeres in a JHK_Moments struct with n_levels
- *  elements. All elements are then zeroed as they're all essentially photon
- *  counters.
- *
- * ************************************************************************** */
 
-int init_jhk(JHK_Moments *moments)
-{
-    moments->j_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->h_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->k_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->j_minus = malloc(sizeof(double) * (n_levels + 1));
-    moments->h_minus = malloc(sizeof(double) * (n_levels + 1));
-    moments->k_minus = malloc(sizeof(double) * (n_levels + 1));
-
-    for (int i = 0; i < n_levels + 1; i++)
-    {
-        moments->j_plus[i] = 0.0;
-        moments->h_plus[i] = 0.0;
-        moments->k_plus[i] = 0.0;
-        moments->j_minus[i] = 0.0;
-        moments->h_minus[i] = 0.0;
-        moments->k_minus[i] = 0.0;
-    }
-
-    return 0;
-}
