@@ -41,7 +41,7 @@ int isotropic_emit_photon(Photon *packet)
 {
     double theta, phi;
 
-    random_cost_phi(&theta, &phi);
+    random_theta_phi(&theta, &phi);
 
     packet->absorb = FALSE;
     packet->n_inters = 0;
@@ -94,8 +94,8 @@ int photon_pos_step(Photon *packet, double ds)
  *
  *  @param[in, out] Mu_hist *hist. A pointer to an initialised Mu_hist struct.
  *
- *  @param[in, out] JHK_Moments *moments. A pointer to an initialised
- *  JHK_Moments struct.
+ *  @param[in, out] Moments *moments. A pointer to an initialised
+ *  Moments struct.
  *
  *  @return 0
  *
@@ -132,13 +132,13 @@ int photon_pos_step(Photon *packet, double ds)
  * ************************************************************************** */
 
 int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
-    JHK_Moments *moments)
+    Moments *moments)
 {
     double ds, xi, z_orig;
 
     isotropic_emit_photon(packet);
 
-    while (packet->z >= 0.0 && packet->z <= 1.0)
+    while (packet->z >= 0.0 && packet->z <= 1.0 && packet->absorb == FALSE)
     {
         z_orig = packet->z;
         ds = random_tau()/tau_max;
@@ -162,7 +162,6 @@ int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
             else             // absorb photon and break while loop
             {
                 packet->absorb = TRUE;
-                break;
             }
         }
     }
@@ -204,7 +203,7 @@ int start_mcrt(void)
 
     Photon packet;
     Mu_hist hist;
-    JHK_Moments moments;
+    Moments moments;
 
     init_photon_hist(&hist);
     init_jhk(&moments);

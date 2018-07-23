@@ -18,28 +18,28 @@
 /* ************************************************************************** */
 /** init_jhk
  *
- *  @brief Initialise a JHK_Moments structure.
+ *  @brief Initialise a Moments structure.
  *
- *  @param[in, out] JHK_Moments *moments. An uninitialised JHK_Moments struct.
+ *  @param[in, out] Moments *moments. An uninitialised Moments struct.
  *
  *  @return 0
  *
  *  @details
  *
- *  Allocates memory for the pointers in a JHK_Moments struct with n_levels + 1
+ *  Allocates memory for the pointers in a Moments struct with n_levels + 1
  *  elements. The elements of these arrays are initialised to zero. Calloc may
  *  have been a better alternative here than malloc followed by a loop.
  *
  * ************************************************************************** */
 
-int init_jhk(JHK_Moments *moments)
+int init_jhk(Moments *moments)
 {
-    moments->j_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->h_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->k_plus = malloc(sizeof(double) * (n_levels + 1));
-    moments->j_minus = malloc(sizeof(double) * (n_levels + 1));
-    moments->h_minus = malloc(sizeof(double) * (n_levels + 1));
-    moments->k_minus = malloc(sizeof(double) * (n_levels + 1));
+    moments->j_plus = malloc(sizeof(*moments->j_plus) * (n_levels + 1));
+    moments->h_plus = malloc(sizeof(*moments->h_plus) * (n_levels + 1));
+    moments->k_plus = malloc(sizeof(*moments->k_plus) * (n_levels + 1));
+    moments->j_minus = malloc(sizeof(*moments->j_minus) * (n_levels + 1));
+    moments->h_minus = malloc(sizeof(*moments->h_minus) * (n_levels + 1));
+    moments->k_minus = malloc(sizeof(*moments->k_minus) * (n_levels + 1));
 
     for (int i = 0; i < n_levels + 1; i++)
     {
@@ -59,8 +59,8 @@ int init_jhk(JHK_Moments *moments)
  *
  *  @brief Update the value of the moments of the radiation field.
  *
- *  @param[in, out] JHK_Moments *moments. A pointer to an initialised
- *  JHK_Moments structure.
+ *  @param[in, out] Moments *moments. A pointer to an initialised
+ *  Moments structure.
  *
  *  @param[in] double z_pre_scat. The original position before a photon has been
  *  transported a length ds.
@@ -92,7 +92,7 @@ int init_jhk(JHK_Moments *moments)
  *
  * ************************************************************************** */
 
-int calculate_moments(JHK_Moments *moments, double z_pre_scat,
+int calculate_moments(Moments *moments, double z_pre_scat,
     double z_post_scat, double cos_theta)
 {
     int pre_scat_level_ele = 0,

@@ -35,10 +35,10 @@ int init_photon_hist(Mu_hist *hist);
  * moments.c
  */
 /* @brief Calculate the J, H, K moments at n_levels + 1 levels */
-int calculate_moments(JHK_Moments *moments, double z1, double z2,
+int calculate_moments(Moments *moments, double z1, double z2,
     double cos_theta);
-/* @brief Intiailise a JHK_Moments structure */
-int init_jhk(JHK_Moments *moments);
+/* @brief Intiailise a Moments structure */
+int init_jhk(Moments *moments);
 
 /*
  * MRW.c
@@ -62,7 +62,7 @@ double gsl_rand_num(double min, double max);
 /* @brief Intialise the seed for the GSL RNG */
 int init_gsl_seed(int x_seed);
 /* @brief Generate a random cos_theta and phi value */
-int random_cost_phi(double *cos_theta, double *phi);
+int random_theta_phi(double *theta, double *phi);
 /* @brief Generate a random isotropic direction */
 int random_isotropic_direction(Photon *packet);
 /* @brief Return a random optical depth value */
@@ -103,13 +103,13 @@ int photon_pos_step(Photon *packet, double ds);
 int start_mcrt(void);
 /* @brief Transport a photon through a cell of constant density */
 int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
-    JHK_Moments *moments);
+    Moments *moments);
 
 /*
  * utilities.c
  */
-/* @brief Free the pointers in a JHK_Moments structure */
-int free_moment_arrays(JHK_Moments *moments);
+/* @brief Free the pointers in a Moments structure */
+int free_moment_arrays(Moments *moments);
 /* @brief Free the pointers in a Mu_hist structure */
 int free_mu_hist(Mu_hist *hist);
 
@@ -119,4 +119,4 @@ int free_mu_hist(Mu_hist *hist);
 /* @brief Write the binned angle intensity to file */
 int write_intensity_to_file(Mu_hist *hist, double *intensity);
 /* @brief Write the moments J, H, K to file */
-int write_moments_to_file(JHK_Moments *moments);
+int write_moments_to_file(Moments *moments);

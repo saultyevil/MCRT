@@ -16,9 +16,9 @@
 /* ************************************************************************** */
 /** free_moments_array
  *
- *  @brief Free the pointers within a JHK_Moments struct.
+ *  @brief Free the pointers within a Moments struct.
  *
- *  @param[in, out] JHK_Moments *moments. An initialised JHK_Moments struct.
+ *  @param[in, out] Moments *moments. An initialised Moments struct.
  *
  *  @return 0
  *
@@ -26,7 +26,7 @@
  *
  * ************************************************************************** */
 
-int free_moment_arrays(JHK_Moments *moments)
+int free_moment_arrays(Moments *moments)
 {
     free(moments->j_plus);
     free(moments->h_plus);

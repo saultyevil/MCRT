@@ -9,7 +9,7 @@
  *  Struct used to represent a photon packet in the simulation.
  *  @typedef plane_vars::Mu_hist
  *  Struct used to store the escape angle bins.
- *  @typedef plane_vars::JHK_Moments
+ *  @typedef plane_vars::Moments
  *  Struct used to store the plus and minus moments of the radiation
  *  field.
  *
@@ -172,27 +172,27 @@ typedef struct Mu_hist
 } Mu_hist;
 
 /* ************************************************************************** */
-/** @struct JHK_Moments
+/** @struct Moments
  *
  *  @brief Struct used to store the plus and minus moments of the radiation
  *  field.
  *
- *  @var JHK_Moments::j_plus
+ *  @var Moments::j_plus
  *  An array of n_levels elements for the upwards J moment.
- *  @var JHK_Moments::h_plus
+ *  @var Moments::h_plus
  *  An array of n_levels elements for the upwards H moment.
- *  @var JHK_Moments::k_plus
+ *  @var Moments::k_plus
  *  An array of n_levels elements for the upwards K moment.
- *  @var JHK_Moments::j_minus
+ *  @var Moments::j_minus
  *  An array of n_levels elements for the downwards J moment.
- *  @var JHK_Moments::h_minus
+ *  @var Moments::h_minus
  *  An array of n_levels elements for the downwards H moment.
- *  @var JHK_Moments::k_minus
+ *  @var Moments::k_minus
  *  An array of n_levels elements for the downwards K moment.
  *
  * ************************************************************************** */
 
-typedef struct JHK_Moments
+typedef struct Moments
 {
     double *h_plus;
     double *j_plus;
@@ -200,4 +200,4 @@ typedef struct JHK_Moments
     double *j_minus;
     double *h_minus;
     double *k_minus;
-} JHK_Moments;
+} Moments;

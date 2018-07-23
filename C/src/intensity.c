@@ -38,8 +38,8 @@ int init_photon_hist(Mu_hist *hist)
     double d_theta = 1.0/mu_bins,
            half_width = 0.5 * d_theta;
 
-    hist->bins = malloc(sizeof(double) * mu_bins);
-    hist->theta = malloc(sizeof(double) * mu_bins);
+    hist->bins = malloc(sizeof(*hist->bins) * mu_bins);
+    hist->theta = malloc(sizeof(*hist->theta) * mu_bins);
 
     for (int i = 0; i < mu_bins; i++)
     {
@@ -101,7 +101,7 @@ int calculate_intensity(Mu_hist *hist, double *intensity)
 {
     for (int i = 0; i < mu_bins; i++)
     {
-        intensity[i] = (hist->bins[i] * mu_bins)/(2 * n_photons *
+        intensity[i] = (hist->bins[i] * mu_bins)/(2.0 * n_photons *
             cos(hist->theta[i]));
     }
 

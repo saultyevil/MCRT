@@ -1,5 +1,3 @@
 # Monte Carlo Radiative Transfer
 
-All codes in this repository are simple MCRT codes which simulate isotropic
-scattering in a parallel plane geometry.
-
+Monte Carlo Radiative Transfer simulations of a parallel plane atmosphere. The plane is infinite in the x, y and -z directions. Photons are isotropically emitted into the origin of the slab and followed until they escape the top of the slab.

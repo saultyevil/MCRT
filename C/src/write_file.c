@@ -58,7 +58,7 @@ int write_intensity_to_file(Mu_hist *hist, double *intensity)
  *
  *  @brief Write the JHK moments of the radiation field to file.
  *
- *  @param[in] JHK_Moments *moments. An initialised JHK_Moments struct.
+ *  @param[in] Moments *moments. An initialised Moments struct.
  *
  *  @return 0
  *
@@ -66,7 +66,7 @@ int write_intensity_to_file(Mu_hist *hist, double *intensity)
  *
  * ************************************************************************** */
 
-int write_moments_to_file(JHK_Moments *moments)
+int write_moments_to_file(Moments *moments)
 {
     FILE *write_file_moments = NULL;
 
