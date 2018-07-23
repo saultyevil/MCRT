@@ -5,8 +5,8 @@ SRC_DIRS ?= ./src
 
 # Macros for CC
 CC = gcc-8
-CFLAGS = -pedantic -Wall
-LIBS = -lm -lgsl -lgslcblas
+CFLAGS = -pedantic -Wall -fopenmp
+LIBS = -lm -lgsl -lgslcblas -fopenmp
 
 # Directories
 SRCS := $(shell find $(SRC_DIRS) -name *.c)
