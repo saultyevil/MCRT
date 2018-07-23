@@ -108,9 +108,7 @@ int write_sim_params_file(void)
  *  @brief Read in a double from file.
  *
  *  @param[in] char *ini_file. The filename to read from.
- *
  *  @param[in] char *par_name. The label given to a parameter in the file.
- *
  *  @param[in, out] double *parameter. A pointer to the parameter being searched
  *  for in the parameter file.
  *
@@ -148,7 +146,7 @@ int read_double(char *ini_file, char *par_name, double *parameter)
     while(fgets(line, MAX_LINE, par_file_ptr) != NULL)
     {
         linenum++;
-        if (line[0] == '#' || line[0] == '\r' || line[0] == '\n')
+        if (line[0] == '#' || line[0] == '\r')
             continue;
 
         if (sscanf(line, "%s %s %s", ini_par_name, par_separator, par_value) \
@@ -193,9 +191,7 @@ int read_double(char *ini_file, char *par_name, double *parameter)
  *  @brief Read in an int from file.
  *
  *  @param[in] char *ini_file. The filename to read from.
- *
  *  @param[in] char *par_name. The label given to a parameter in the file.
- *
  *  @param[in, out] int *parameter. A pointer to the parameter being searched
  *  for in the parameter file.
  *
@@ -237,7 +233,7 @@ int read_int(char *ini_file, char *par_name, int *parameter)
     while(fgets(line, MAX_LINE, par_file_ptr) != NULL)
     {
         linenum++;
-        if (line[0] == '#' || line[0] == '\r' || line[0] == '\n')
+        if (line[0] == '#' || line[0] == '\r')
             continue;
 
         if (sscanf(line, "%s %s %s", ini_par_name, par_separator, par_value) \
@@ -293,7 +289,6 @@ int read_int(char *ini_file, char *par_name, int *parameter)
  *  @brief Take in a double as input from the command line.
  *
  *  @param[in] char *par_name. The label for the parameter.
- *
  *  @param[in, out] double *parameter. A pointer to the parameter which is being
  *  input.
  *
@@ -323,7 +318,6 @@ int get_double_CL(char *par_name, double *parameter)
  *  @brief Take in an int as input from the command line.
  *
  *  @param[in] char *par_name. The label for the parameter.
- *
  *  @param[in, out] int *parameter. A pointer to the parameter which is being
  *  input.
  *

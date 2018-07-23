@@ -52,7 +52,6 @@ int init_gsl_seed(int x_seed)
  *  @brief Return a random number between the boundaries min and max.
  *
  *  @param[in] double min. The minimum value the random number can take.
- * 
  *  @param[in] double max. The maximum value the random number can take.
  *
  *  @return A random double between min and max.
@@ -89,20 +88,19 @@ double random_tau(void)
 }
 
 /* ************************************************************************** */
-/** random_theta_phi
+/** random_cost_phi
  *
- *  @brief Generate a random isotropic mu and phi direction.
+ *  @brief Generate a random mu and phi direction.
  *
- *  @param[in, out] double *theta. A pointer for the random theta direction.
- *
+ *  @param[in, out] double *cos_theta. A pointer for the random mu direction.
  *  @param[in, out] double *phi. A pointer for the random phi direction.
  *
  *  @return 0
  *
  *  @details
  *
- *  Generates a random theta and phi direction, usually for use when giving a
- *  photon a new direction after an isotropic scatter.
+ *  Generates a random mu and phi direction usually for use when giving a photon
+ *  a new direction after an isotropic scatter.
  *
  * ************************************************************************** */
 
