@@ -3,7 +3,7 @@
  *  @author Edward Parkinson
  *  @date 12 July 2018
  *
- *  @brief Contains function(s) for obtaining default values for pamameters.
+ *  @brief Contains function(s) for obtaining default values for parameter.
  *
  * ************************************************************************** */
 
@@ -46,13 +46,16 @@ int default_param_values(char *par_name, char *par_value_string, int double_sw)
 {
     int i = 0;
 
+    /*
+     * Pointers are used so we don't have to define the number of elements and
+     * for ease of life for other things
+     */
     char *params[] =
         {"MU_BINS", "N_PHOTONS", "N_LEVELS", "OUTPUT_FREQ", "TAU_MAX",
-         "ALBEDO", "MRW_GAMMA", "MRW_CRIT_SCAT", "SEED", NULL};
+         "ALBEDO", "SEED", NULL};
 
     char *default_values[] =
-        {"30", "1000000", "10", "100000", "5.0", "1.0", "0.2", "300", "1337",
-         NULL};
+        {"30", "1000000", "10", "100000", "5.0", "1.0", "1337", NULL};
 
     par_value_string[0] = NO_PAR_CONST_STRING;
 
@@ -81,6 +84,9 @@ int default_param_values(char *par_name, char *par_value_string, int double_sw)
             case TRUE:
                 printf("DOUBLE: %s\n", par_name);
                 scanf("%s", par_value_string);
+                break;
+            default:
+                printf("Invalid input into double_switch\n");
                 break;
         }
     }

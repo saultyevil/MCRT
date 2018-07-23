@@ -16,12 +16,13 @@
 /* ************************************************************************** */
 /** main
  *
- *  @brief The main function for, mostly, controlling the flow of the program.
+ *  @brief The main function.
  *
- *  @param[in] int argc. Number of arguments provided.
- *  @param[int] char *argv[]. The arguments provided.
+ *  @param[in] int argc. Number of command line arguments provided.
  *
- *  @return 0.
+ *  @param[int] char *argv[]. The command line arguments provided.
+ *
+ *  @return 0
  *
  *  @details
  *
@@ -34,36 +35,24 @@ int main(int argc, char *argv[])
     char *ini_file;
     time_t start, stop;
 
-    printf("\nBeginning simulation...\n");
-    print_time();
-
     if (argc >= 2)
     {
         ini_file = argv[1];
     }
     else
     {
-        printf("No configuration file option provided in program argument.\n");
-        printf("Using default configuration filename: %s.\n\n",
-               DEFAULT_INI_FILE);
+        printf("No configuration file provided. Assuming default path.\n");
         ini_file = DEFAULT_INI_FILE;
     }
 
-    /*
-     * Get the parameters from file
-     */
-    get_parameters(ini_file);
-
-    /*
-     * Initialise the random seed -- using the clock for now.
-     */
-    init_gsl_seed(seed);
-
-    /*
-     * Start the MCRT procedure
-     */
     start = time(NULL);
-    start_mcrt();
+
+    printf("\nBeginning simulation...\n");
+    print_time();
+    get_parameters(ini_file);
+    init_gsl_seed(seed);
+    start_mcrt(); // start the MCRT simulation iterations
+
     stop = time(NULL);
 
     printf("\nMonte Carlo run time: ~%3.2f s.\nSimulation completed.\n",

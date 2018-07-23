@@ -142,5 +142,3 @@ int calculate_moments(Moments *moments, double z_pre_scat,
 
     return 0;
 }
-
-
