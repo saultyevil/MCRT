@@ -22,7 +22,7 @@ spec = [
 
 
 @jitclass(spec)
-class PhotonPacket(object):
+class PhotonPacket():
     """Photon packet object. Contains all the functions to create and scatter
     photons."""
 
@@ -140,7 +140,7 @@ def transport_photon_packet(photon, tau_max, albedo):
         # else it's still in the atmosphere and scatter or absorb it
 
         if photon.coords[2] < 0:
-            photon.__init__()
+            photon = PhotonPacket()
         elif photon.coords[2] > 1:
             photon.escaped = True
         else:
