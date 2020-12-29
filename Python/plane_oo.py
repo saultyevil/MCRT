@@ -8,7 +8,7 @@ import timeit
 import numpy as np
 from matplotlib import pyplot as plt
 from numba import jit, jitclass
-from numba import float32, boolean
+from numba import float32, int32, boolean
 
 
 spec = [
@@ -49,6 +49,66 @@ class PhotonPacket(object):
         self.sinphi = np.sqrt(1 - self.cosphi ** 2)
 
 
+spec = [
+    ("n_bins", int32),
+    ("weight", float32[:]),
+    ("theta", float32[:]),
+]
+
+
+@jitclass(spec)
+class EscapedHistogram():
+    """Histogram object. Used to track the number of photons which have escaped
+    along the various escaping angles."""
+
+    def __init__(self, n_bins):
+        """
+        Create a new histogram.
+
+        Parameters
+        ----------
+        n_bins: int
+            The number of bins to make up the histogram.
+        """
+
+        self.n_bins = n_bins
+        self.weight = np.zeros(n_bins, dtype=np.float32)
+        self.theta = np.zeros(n_bins, dtype=np.float32)
+        d_theta = 1 / n_bins
+        half_width = 0.5 * d_theta
+        for i in range(n_bins):
+            self.theta[i] = np.arccos(i * d_theta + half_width)
+
+    def bin_photon(self, cos_theta):
+        """
+        Bin a photon to the weight histogram.
+
+        Parameters
+        ----------
+        cos_theta: float
+            The escaping cos(theta) direction of the photon.
+        """
+
+        self.weight[abs(int(cos_theta * self.n_bins))] += 1
+
+    def calculate_intensity(self, n_photons):
+        """
+        Calculate the mean intensity of the binned escape angles.
+
+        Parameters
+        ----------
+        n_photons: int.
+            The number of photons in the simulation.
+
+        Returns
+        -------
+        intensity: np.ndarray
+            The intensity for each binned angle.
+        """
+
+        return self.weight * self.n_bins / (2 * n_photons * np.cos(self.theta))
+
+
 @jit
 def transport_photon_packet(photon, tau_max, albedo):
     """
@@ -69,10 +129,10 @@ def transport_photon_packet(photon, tau_max, albedo):
         # sample a random optical depth and update the position of the
         # packet
 
-        L = -np.log(np.random.rand()) / tau_max
-        photon.coords[0] += L * photon.sintheta * photon.cosphi
-        photon.coords[1] += L * photon.sintheta * photon.sinphi
-        photon.coords[2] += L * photon.costheta
+        length = -np.log(np.random.rand()) / tau_max
+        photon.coords[0] += length * photon.sintheta * photon.cosphi
+        photon.coords[1] += length * photon.sintheta * photon.sinphi
+        photon.coords[2] += length * photon.costheta
 
         # if z < 0, the photon has traveled deeper into the atmosphere
         # and is lost, hence restart the photon
@@ -93,85 +153,6 @@ def transport_photon_packet(photon, tau_max, albedo):
     return
 
 
-def init_hist(n_bins):
-    """
-    Initialize the histogram for binning photon escapes.
-
-    Parameters
-    ----------
-    n_bins: int.
-        The number of bins in the histogram.
-
-    Returns
-    -------
-    bins: np.ndarray
-        The empty angle bins.
-    theta: np.ndarray
-        The angles of the histogram bins.
-    """
-
-    theta = np.zeros(n_bins)
-    bins = np.zeros_like(theta)
-
-    dtheta = 1 / n_bins
-    half_width = 0.5 * dtheta
-    # todo vectorize
-    for i in range(n_bins):
-        theta[i] = np.arccos(i * dtheta + half_width)
-
-    return bins, theta
-
-
-def bin_photon(cos_theta, n_bins, hist):
-    """
-    Bin a photon into the appropriate histogram bin. This histogram basically
-    keeps track of the number of photons escaping from the binned angle.
-
-    Parameters
-    ----------
-    cos_theta: float
-        The escape angle of the photon.
-    n_bins: int
-        The number of bins in the histogram.
-    hist: np.ndarray
-        The histogram to update.
-
-    Returns
-    -------
-    hist: np.ndarray
-        The updated histogram.
-    """
-
-    i = abs(int(cos_theta * n_bins))
-    hist[i] += 1
-
-    return hist
-
-
-def calculate_photon_intensity(n_bins, hist, theta_bins, n_photons):
-    """
-    Calculate the mean intensity of the binned escape angles.
-
-    Parameters
-    ----------
-    n_bins: int
-        The number of theta angle bins.
-    hist: np.ndarray
-        The histogram of binned photon numbers.
-    theta_bins: np.ndarray
-        The binned theta angles.
-    n_photons: int.
-        The number of photons in the simulation.
-
-    Returns
-    -------
-    intensity: np.ndarray
-        The intensity for each binned angle.
-    """
-
-    return hist * n_bins / (2 * n_photons * np.cos(theta_bins))
-
-
 def main():
     """Main function of the script"""
 
@@ -184,20 +165,21 @@ def main():
     print('Beginning Simulation...\n')
 
     start = timeit.default_timer()
-    hist, theta_bins = init_hist(n_bins)
+    hist = EscapedHistogram(n_bins)
+    theta_bins = hist.theta
 
     for i in range(n_photons):
         pp = PhotonPacket()
         transport_photon_packet(pp, tau_max, albedo)
 
         if pp.escaped:
-            hist = bin_photon(pp.costheta, n_bins, hist)
+            hist.bin_photon(pp.costheta)
 
-        if ((i + 1) % output_freq == 0):
+        if (i + 1) % output_freq == 0:
             percent_complete = 100 * (i + 1) / n_photons
             print('{} photons ({:3.1f}%) transported.'.format(i + 1, percent_complete))
 
-    intensity = calculate_photon_intensity(n_bins, hist, theta_bins, n_photons)
+    intensity = hist.calculate_intensity(n_photons)
     stop = timeit.default_timer()
 
     print('\nTransport of {} packets completed in {:3.2f} seconds.'.format(n_photons, stop - start))
@@ -210,11 +192,10 @@ def main():
 # =============================================================================
 
 if __name__ == "__main__":
-    theta, intensity = main()
+    t, i = main()
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(theta, intensity, 'kx')
+    ax.plot(t, i, 'kx')
     ax.set_xlabel(r'$cos(\theta)$')
     ax.set_ylabel(r'Normalised Intensity')
     ax.set_xlim(0, 0.5 * np.pi)
-    plt.savefig('mcrt_plane.pdf')
     plt.show()
