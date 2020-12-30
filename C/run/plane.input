@@ -1,0 +1,7 @@
+n_photons 1e6
+output_frequency 1e5
+seed 123421434198
+tau_max 7
+scatter_albedo 1
+hist.n_bins 40
+moments.n_levels 20

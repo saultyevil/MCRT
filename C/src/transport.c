@@ -11,22 +11,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+
+#include "variables.h"
+#include "functions.h"
 
 #if defined (_OPENMP)
-    #include <omp.h>
+#include <omp.h>
 #endif
-
-#include "plane_vars.h"
-#include "plane_funcs.h"
 
 /* ************************************************************************** */
 /** isotropic_emit_photon
  *
  *  @brief Emit a photon at the origin of the plane isotropically.
  *
- *  @param[in, out] Photon *packet. A pointer to the current MC photon packet.
- *
- *  @return 0
+ *  @param[in,out] *packet  A pointer to the current MC photon packet.
  *
  *  @details
  *
@@ -36,36 +35,28 @@
  *
  * ************************************************************************** */
 
-int isotropic_emit_photon(Photon *packet)
+void
+isotropic_emit_photon(PhotonPacket_t *packet)
 {
-    double mu, phi;
-
-    random_theta_phi(&mu, &phi);  // we don't use mu, but shhh! The compiler
-                                  // doesn't have to know.
-    packet->absorb = FALSE;
-    packet->n_inters = 0;
-
-    packet->x = 0.0;
-    packet->y = 0.0;
-    packet->z = 0.0;
-    packet->cos_phi = cos(phi);
-    packet->sin_phi = sin(phi);
-    packet->cos_theta = sqrt(gsl_rand_num(0, 1));
-    packet->sin_theta = sqrt(1 - packet->cos_theta * packet->cos_theta);
-
-    return 0;
+  double mu, phi;
+  random_theta_phi(&mu, &phi);
+  packet->x = 0.0;
+  packet->y = 0.0;
+  packet->z = 0.0;
+  packet->cosphi = cos(phi);
+  packet->sinphi = sin(phi);
+  packet->costheta = sqrt(gsl_rand_num(0, 1));
+  packet->sintheta = sqrt(1 - packet->costheta * packet->costheta);
+  packet->absorb = false;
 }
 
 /* ************************************************************************** */
-/** photon_pos_step
+/** move_photon
  *
  *  @brief Transport the photon a distance ds, in a direction (theta, phi).
  *
- *  @param[in, out] Photon *packet. A pointer to the current MC photon packet.
- *
- *  @param[in] double ds. The displacement for the photon to travel.
- *
- *  @return 0
+ *  @param[in,out] *packet  A pointer to the current MC photon packet.
+ *  @param[in] ds           The displacement for the photon to travel.
  *
  *  @details
  *
@@ -75,26 +66,21 @@ int isotropic_emit_photon(Photon *packet)
  *
  * ************************************************************************** */
 
-int photon_pos_step(Photon *packet, double ds)
+void
+move_photon(PhotonPacket_t *packet, double ds)
 {
-    packet->x += ds * packet->sin_theta * packet->cos_phi;
-    packet->y += ds * packet->sin_theta * packet->sin_phi;
-    packet->z += ds * packet->cos_theta;
-
-    return 0;
+  packet->x += ds * packet->sintheta * packet->cosphi;
+  packet->y += ds * packet->sintheta * packet->sinphi;
+  packet->z += ds * packet->costheta;
 }
 
 /* ************************************************************************** */
-/** transport_photon_const_rho
+/** transport_single_photon
  *
  *  @brief Control photon transport within in a slab of constant density.
  *
- *  @param[in, out] Photon *packet. A pointer to the current MC photon packet.
- *
- *  @param[in, out] Mu_hist *hist. A pointer to an initialised Mu_hist struct.
- *
- *  @param[in, out] Moments *moments. A pointer to an initialised
- *  Moments struct.
+ *  @param[in, out] *hist     A pointer to an initialised Histogram_t struct.
+ *  @param[in, out] *moments  A pointer to an initialised Moments_t struct.
  *
  *  @return 0
  *
@@ -112,10 +98,10 @@ int photon_pos_step(Photon *packet, double ds)
  *
  *  However, if a photon goes below the slab, i.e. packet->z < 0, then the
  *  photon is remitted and transported again to enforce the boundary flux
- *  condition of n_photons.
+ *  condition of N_PHOTONS.
  *
  *  In optical depth coordinates, a photon will continue to be transported if
- *  packet->tau_coord >= 0 && packet->tau_coord <= tau_max.
+ *  packet->tau_coord >= 0 && packet->tau_coord <= TAU_MAX.
  *
  *  If a photon becomes trapped in an optically thick, the Modified Random
  *  Walk will be invoked to macrostep the photon. This will only occur when the
@@ -130,54 +116,48 @@ int photon_pos_step(Photon *packet, double ds)
  *
  * ************************************************************************** */
 
-int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
-    Moments *moments)
+void
+transport_single_photon(Histogram_t *hist, Moments_t *moments)
 {
-    double ds, xi, z_orig;
+  PhotonPacket_t photon = PHOTON_INIT;
 
-    isotropic_emit_photon(packet);
+  isotropic_emit_photon(&photon);
 
-    while (packet->z >= 0.0 && packet->z <= 1.0 && packet->absorb == FALSE)
+  double z_orig;
+  while(photon.z >= 0.0 && photon.z <= 1.0)
+  {
+    z_orig = photon.z;
+    double ds = random_tau() / TAU_MAX;
+    move_photon(&photon, ds);
+    increment_radiation_moment_estimators(moments, z_orig, photon.z, photon.costheta);
+
+    if(photon.z < 0.0)
     {
-        z_orig = packet->z;
-        ds = random_tau()/tau_max;
-        photon_pos_step(packet, ds);
-        packet->n_inters += 1;
-
-
-        calculate_moments(moments, z_orig, packet->z, packet->cos_theta);
-
-        if (packet->z < 0.0)
-        {
-            isotropic_emit_photon(packet);
-        }
-        else if (packet->z <= 1.0)
-        {
-            xi = gsl_rand_num(0, 1);
-
-            if (xi <= albedo)  // scatter photon's direction and continue
-            {
-                random_isotropic_direction(packet);
-            }
-            else              // absorb photon and break while loop
-            {
-                packet->absorb = TRUE;
-            }
-        }
+      isotropic_emit_photon(&photon);
     }
+    else
+    {
+      double xi = gsl_rand_num(0, 1);
+      if(xi <= SCATTERING_ALBEDO)
+      {
+        isotropic_scatter_photon(&photon);
+      }
+      else
+      {
+        photon.absorb = false;
+        break;
+      }
+    }
+  }
 
-    if (packet->absorb == FALSE)
-        bin_photon(hist, packet->cos_theta);
-
-   return 0;
+  if(!photon.absorb)
+    bin_photon_to_histogram(hist, photon.costheta);
 }
 
 /* ************************************************************************** */
-/** start_mcrt
+/** transport_all_photons
  *
  *  @brief Control the MC interations.
- *
- *  @return 0
  *
  *  @details
  *
@@ -191,70 +171,45 @@ int transport_photon_const_rho(Photon *packet, Mu_hist *hist,
  *
  * ************************************************************************** */
 
-int start_mcrt(void)
+void
+transport_all_photons(char *file_name)
 {
-    #if defined(_OPENMP)
-        int omp_counter = 0;
-    #endif
+  int omp_counter = 0;
+  Histogram_t hist;
+  Moments_t moments;
 
-    int total_inters = 0;
-    double *intens = malloc(sizeof(*intens) * mu_bins);
+  get_all_parameters(file_name, &hist, &moments);
+  init_gsl_seed(SEED);
+  init_histogram(&hist);
+  init_moments(&moments);
 
-    Photon packet;
-    Mu_hist hist;
-    Moments moments;
-
-    init_photon_hist(&hist);
-    init_jhk(&moments);
-
-    #pragma omp parallel for \
+#pragma omp parallel for \
         default(none), \
         schedule(dynamic), \
         private(packet), \
-        reduction(+:total_inters), \
         shared(n_photons, hist, moments, output_freq, omp_counter)
-    for (int photon_count = 1; photon_count <= n_photons; photon_count++)
-    {
-        transport_photon_const_rho(&packet, &hist, &moments);
-        total_inters += packet.n_inters;
+  for(int i = 0; i < N_PHOTONS; i++)
+  {
+    transport_single_photon(&hist, &moments);
 
-        #if defined(_OPENMP)
-            #pragma omp atomic
-                omp_counter += 1;
+#if defined(_OPENMP)
+#pragma omp atomic
+    omp_counter += 1;
+#pragma omp critical
+{
+    if (omp_counter % OUTPUT_FREQUENCY == 0)
+        printf("%6.0d photon packets transported (%3.0f%%)\n", omp_counter, (double) omp_counter / N_PHOTONS * 100);
+}
+#else
+    if((i + 1) % OUTPUT_FREQUENCY == 0)
+      printf("%6.0d photon packets transported (%3.0f%%)\n", i + 1, (double) (i + 1) / N_PHOTONS * 100);
+#endif
+  }
 
-            #pragma omp critical
-            {
-                if (omp_counter % output_freq == 0)
-                    printf("%6.0d photon packets transported (%3.0f%%)\n",
-                            omp_counter, (double) omp_counter/n_photons * 100);
-            }
-        #else
-            if (photon_count % output_freq == 0)
-                printf("%6.0d photon packets transported (%3.0f%%)\n",
-                       photon_count, (double) photon_count/n_photons * 100);
-        #endif
-    }
+  convert_weight_to_intensity(&hist);
+  ouput_intensity_to_file(&hist);
+  output_radiation_moments_to_file(&moments);
 
-    /*
-     * Calculate the intensity of the output and dump the results to file
-     */
-    calculate_intensity(&hist, intens);
-    write_intensity_to_file(&hist, intens);
-    write_moments_to_file(&moments);
-
-    /*
-     * Cleaning up..
-     */
-    free(intens);
-    free_mu_hist(&hist);
-    free_moment_arrays(&moments);
-
-    int average_inters = (int) ((double) total_inters/n_photons);
-
-    printf("\n-------------\n");
-    printf("\nTotal number of interactions: %d\n", total_inters);
-
-    printf("\nAverage photon interactions to escape: %d.\n", average_inters);
-
-    return 0;
+  free_hist(&hist);
+  free_moments(&moments);
 }

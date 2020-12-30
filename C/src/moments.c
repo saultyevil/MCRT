@@ -8,70 +8,53 @@
  *
  * ************************************************************************** */
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
-#include "plane_vars.h"
-#include "plane_funcs.h"
+#include "variables.h"
+#include "functions.h"
 
 /* ************************************************************************** */
-/** init_jhk
+/** init_moments
  *
- *  @brief Initialise a Moments structure.
+ *  @brief Initialise a Moments_t structure.
  *
- *  @param[in, out] Moments *moments. An uninitialised Moments struct.
+ *  @param[in, out] *moments. An uninitialised Moments_t struct.
  *
  *  @return 0
  *
  *  @details
  *
- *  Allocates memory for the pointers in a Moments struct with n_levels + 1
+ *  Allocates memory for the pointers in a Moments_t struct with n_levels + 1
  *  elements. The elements of these arrays are initialised to zero. Calloc may
  *  have been a better alternative here than malloc followed by a loop.
  *
  * ************************************************************************** */
 
-int init_jhk(Moments *moments)
+void
+init_moments(Moments_t *moments)
 {
-    moments->j_plus = malloc(sizeof(*moments->j_plus) * (n_levels + 1));
-    moments->h_plus = malloc(sizeof(*moments->h_plus) * (n_levels + 1));
-    moments->k_plus = malloc(sizeof(*moments->k_plus) * (n_levels + 1));
-    moments->j_minus = malloc(sizeof(*moments->j_minus) * (n_levels + 1));
-    moments->h_minus = malloc(sizeof(*moments->h_minus) * (n_levels + 1));
-    moments->k_minus = malloc(sizeof(*moments->k_minus) * (n_levels + 1));
-
-    for (int i = 0; i < n_levels + 1; i++)
-    {
-        moments->j_plus[i] = 0.0;
-        moments->h_plus[i] = 0.0;
-        moments->k_plus[i] = 0.0;
-        moments->j_minus[i] = 0.0;
-        moments->h_minus[i] = 0.0;
-        moments->k_minus[i] = 0.0;
-    }
-
-    return 0;
+  moments->j_plus = calloc(moments->n_levels + 1, sizeof *moments->j_plus);
+  moments->h_plus = calloc(moments->n_levels + 1, sizeof *moments->h_plus);
+  moments->k_plus = calloc(moments->n_levels + 1, sizeof *moments->k_plus);
+  moments->j_minus = calloc(moments->n_levels + 1, sizeof *moments->j_minus);
+  moments->h_minus = calloc(moments->n_levels + 1, sizeof *moments->h_minus);
+  moments->k_minus = calloc(moments->n_levels + 1, sizeof *moments->k_minus);
 }
 
 /* ************************************************************************** */
-/** calculate_moments
+/** increment_radiation_moment_estimators
  *
  *  @brief Update the value of the moments of the radiation field.
  *
- *  @param[in, out] Moments *moments. A pointer to an initialised
- *  Moments structure.
- *
- *  @param[in] double z_pre_scat. The original position before a photon has been
- *  transported a length ds.
- *
- *  @param[in] double z_post_scat. The updated position after the photon has
- *  been transported a length ds.
- *
- *  @param[in] double cos_theta. The cosine of the theta direction of the
- *  photon.
- *
- *  @return 0
+ *  @param[in,out] *moments  A pointer to an initialised Moments_t structure.
+ *  @param[in] z_pre_scat      The original position before a photon has
+ *                             been transported a length ds.
+ *  @param[in] z_post_scat     The updated position after the photon has
+ *                             been transported a length ds.
+ *  @param[in] costheta        The cosine of the theta direction of the
+ *                             photon.
  *
  *  @details
  *
@@ -92,53 +75,65 @@ int init_jhk(Moments *moments)
  *
  * ************************************************************************** */
 
-int calculate_moments(Moments *moments, double z_pre_scat,
-    double z_post_scat, double cos_theta)
+void
+increment_radiation_moment_estimators(Moments_t *moments, double z_pre, double z_post, double costheta)
 {
-    int pre_scat_level_ele = 0,
-        post_scat_level_ele = 0;
+  /*
+   * If the photon hasn't moved a vast distance, then we don't need to do
+   * anything
+   */
 
-    if ( (z_pre_scat > 0) && (z_post_scat > 0) && \
-        (((int) (z_pre_scat * n_levels)) == ((int) (z_post_scat * n_levels))))
+  if((z_pre > 0) && (z_post > 0) && (((int) (z_pre * moments->n_levels)) == ((int) (z_post * moments->n_levels))))
+    return;
+
+  int pre_scat_level_ele;
+  int post_scat_level_ele;
+
+  if(costheta > 0)
+  {
+    if(z_pre <= 0)
     {
-        return 0;
+      pre_scat_level_ele = 0;
+    }
+    else
+    {
+      pre_scat_level_ele = (int) (z_pre * moments->n_levels) + 1;
     }
 
-    if (cos_theta > 0)
+    if(z_post >= 1)
     {
-        if (z_pre_scat <= 0)
-            pre_scat_level_ele = 0;
-        else
-            pre_scat_level_ele = (int) (z_pre_scat * n_levels) + 1;
-
-        if (z_post_scat >= 1)
-            post_scat_level_ele = n_levels;
-        else
-            post_scat_level_ele = (int) (z_post_scat * n_levels);
-
-        for (int i = pre_scat_level_ele; i <= post_scat_level_ele; i++)
-        {
-            moments->j_plus[i] += 1.0/cos_theta;
-            moments->h_plus[i] += 1;
-            moments->k_plus[i] += cos_theta;
-        }
+      post_scat_level_ele = moments->n_levels;
     }
-    else if (cos_theta < 0)
+    else
     {
-        pre_scat_level_ele = (int) (z_pre_scat * n_levels);
-
-        if (z_post_scat <= 0)
-            post_scat_level_ele = 0;
-        else
-            post_scat_level_ele = (int) (z_post_scat * n_levels) + 1;
-
-        for (int i = post_scat_level_ele; i <= pre_scat_level_ele; i++)
-        {
-            moments->j_minus[i] += 1.0/fabs(cos_theta);
-            moments->h_minus[i] -= 1;
-            moments->k_minus[i] += fabs(cos_theta);
-        }
+      post_scat_level_ele = (int) (z_post * moments->n_levels);
     }
 
-    return 0;
+    for(int i = pre_scat_level_ele; i <= post_scat_level_ele; i++)
+    {
+      moments->j_plus[i] += 1.0 / costheta;
+      moments->h_plus[i] += 1;
+      moments->k_plus[i] += costheta;
+    }
+  }
+  else if(costheta < 0)
+  {
+    pre_scat_level_ele = (int) (z_pre * moments->n_levels);
+
+    if(z_post <= 0)
+    {
+      post_scat_level_ele = 0;
+    }
+    else
+    {
+      post_scat_level_ele = (int) (z_post * moments->n_levels) + 1;
+    }
+
+    for(int i = post_scat_level_ele; i <= pre_scat_level_ele; i++)
+    {
+      moments->j_minus[i] += 1.0 / fabs(costheta);
+      moments->h_minus[i] -= 1;
+      moments->k_minus[i] += fabs(costheta);
+    }
+  }
 }

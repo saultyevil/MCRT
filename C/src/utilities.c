@@ -8,17 +8,18 @@
  *
  * ************************************************************************** */
 
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "plane_vars.h"
-#include "plane_funcs.h"
+#include "variables.h"
+#include "functions.h"
 
 /* ************************************************************************** */
 /** free_moments_array
  *
- *  @brief Free the pointers within a Moments struct.
+ *  @brief Free the pointers within a Moments_t struct.
  *
- *  @param[in, out] Moments *moments. An initialised Moments struct.
+ *  @param[in,out] *moments. An initialised Moments_t struct.
  *
  *  @return 0
  *
@@ -26,24 +27,24 @@
  *
  * ************************************************************************** */
 
-int free_moment_arrays(Moments *moments)
+void
+free_moments(Moments_t *moments)
 {
-    free(moments->j_plus);
-    free(moments->h_plus);
-    free(moments->k_plus);
-    free(moments->j_minus);
-    free(moments->h_minus);
-    free(moments->k_minus);
-
-    return 0;
+  moments->n_levels = 0;
+  free(moments->j_plus);
+  free(moments->h_plus);
+  free(moments->k_plus);
+  free(moments->j_minus);
+  free(moments->h_minus);
+  free(moments->k_minus);
 }
 
 /* ************************************************************************** */
-/** free_mu_hist
+/** free_hist
  *
- *  @brief Free the pointers within a Mu_hist struct.
+ *  @brief Free the pointers within a Histogram_t struct.
  *
- *  @param[in, out] Mu_hist *hist. An initialised Mu_hist struct.
+ *  @param[in, out] Mu_hist *hist. An initialised Histogram_t struct.
  *
  *  @return 0
  *
@@ -51,10 +52,11 @@ int free_moment_arrays(Moments *moments)
  *
  * ************************************************************************** */
 
-int free_mu_hist(Mu_hist *hist)
+void
+free_hist(Histogram_t *hist)
 {
-    free(hist->bins);
-    free(hist->theta);
-
-    return 0;
+  hist->n_bins = 0;
+  free(hist->intensity);
+  free(hist->weight);
+  free(hist->theta);
 }

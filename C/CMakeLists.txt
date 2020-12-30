@@ -8,14 +8,13 @@ include_directories(C:/GSL/include)
 
 add_executable(
         MCRT
-        src/default_params.c
-        src/intensity.c
+        src/histogram.c
         src/moments.c
-        src/plane.c
-        src/plane_funcs.h
-        src/plane_vars.h
+        src/main.c
+        src/functions.h
+        src/variables.h
         src/random.c
-        src/read_par.c
+        src/parameters.c
         src/time.c
         src/transport.c
         src/utilities.c

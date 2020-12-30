@@ -12,38 +12,34 @@
  *
  * ************************************************************************** */
 
-#include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
-#include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
-#include "plane_vars.h"
-#include "plane_funcs.h"
+#include "variables.h"
+#include "functions.h"
 
 gsl_rng *rng;
 
 /* ************************************************************************** */
 /** init_gsl_seed
  *
- *  @brief Initialise the random seed for the GSL random number generator.
+ *  @brief Initialise the random SEED for the GSL random number generator.
  *
- *  @param[in] int seed. A seed to use.
- *
- *  @return 0
+ *  @param[in] seed
  *
  *  @details
  *
- *  Initialises the GSL RNG algorithm using the seed provided. The RNG algorithm
+ *  Initialises the GSL RNG algorithm using the SEED provided. The RNG algorithm
  *  choice should be thread safe!!!
  *
  * ************************************************************************** */
 
-int init_gsl_seed(int x_seed)
+void
+init_gsl_seed(int seed)
 {
-    rng = gsl_rng_alloc(gsl_rng_mt19937);
-    gsl_rng_set(rng, x_seed);
-
-    return 0;
+  rng = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(rng, seed);
 }
 
 /* ************************************************************************** */
@@ -51,9 +47,8 @@ int init_gsl_seed(int x_seed)
  *
  *  @brief Return a random number between the boundaries min and max.
  *
- *  @param[in] double min. The minimum value the random number can take.
- *
- *  @param[in] double max. The maximum value the random number can take.
+ *  @param[in] min  The minimum value the random number can take.
+ *  @param[in] max  The maximum value the random number can take.
  *
  *  @return A random double between min and max.
  *
@@ -63,11 +58,11 @@ int init_gsl_seed(int x_seed)
  *
  * ************************************************************************** */
 
-double gsl_rand_num(double min, double max)
+double
+gsl_rand_num(double min, double max)
 {
-    double rand_num = gsl_rng_uniform_pos(rng);
-
-    return min + ((max - min) * rand_num);
+  double rand_num = gsl_rng_uniform_pos(rng);
+  return min + ((max - min) * rand_num);
 }
 
 /* ************************************************************************** */
@@ -75,17 +70,18 @@ double gsl_rand_num(double min, double max)
  *
  *  @brief Return a random optical depth.
  *
- *  @return a random double which is an optical depth...?
+ *  @return a random optical depth
  *
  *  @details
  *
- *  Returns a random optical depeth via -1 * log(1 - rand_num).
+ *  Returns a random optical depth via -1 * log(1 - rand_num).
  *
  * ************************************************************************** */
 
-double random_tau(void)
+double
+random_tau(void)
 {
-    return -1.0 * log(1 - gsl_rand_num(0, 1));
+  return -1.0 * log(1 - gsl_rand_num(0, 1));
 }
 
 /* ************************************************************************** */
@@ -93,11 +89,8 @@ double random_tau(void)
  *
  *  @brief Generate a random isotropic mu and phi direction.
  *
- *  @param[in, out] double *theta. A pointer for the random theta direction.
- *
- *  @param[in, out] double *phi. A pointer for the random phi direction.
- *
- *  @return 0
+ *  @param[in,out] *theta A pointer for the random theta direction.
+ *  @param[in,out] *phi   A pointer for the random phi direction.
  *
  *  @details
  *
@@ -106,21 +99,19 @@ double random_tau(void)
  *
  * ************************************************************************** */
 
-int random_theta_phi(double *theta, double *phi)
+void
+random_theta_phi(double *theta, double *phi)
 {
-    *theta = acos(2 * gsl_rand_num(0, 1) - 1);
-    *phi = 2 * PI * gsl_rand_num(0, 1);
-
-    return 0;
+  *theta = acos(2 * gsl_rand_num(0, 1) - 1);
+  *phi = 2 * PI * gsl_rand_num(0, 1);
 }
 
 /* ************************************************************************** */
-/** random_isotropic_direction
+/** isotropic_scatter_photon
  *
  *  @brief Points the photon packet in a new isotropic direction.
  *
- *  @param[in, out] Photon *packet. A pointer to the current MC interation
- *  photon.
+ *  @param[in, out] packet  A pointer to the current photon
  *
  *  @return 0
  *
@@ -133,16 +124,14 @@ int random_theta_phi(double *theta, double *phi)
  *
  * ************************************************************************** */
 
-int random_isotropic_direction(Photon *packet)
+void
+isotropic_scatter_photon(PhotonPacket_t *packet)
 {
-    double mu, phi;
+  double mu, phi;
+  random_theta_phi(&mu, &phi);
 
-    random_theta_phi(&mu, &phi);
-
-    packet->cos_phi = cos(phi);
-    packet->sin_phi = sin(phi);
-    packet->cos_theta = cos(mu);
-    packet->sin_theta = sin(mu);
-
-    return 0;
+  packet->cosphi = cos(phi);
+  packet->sinphi = sin(phi);
+  packet->costheta = cos(mu);
+  packet->sintheta = sin(mu);
 }

@@ -10,55 +10,51 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "plane_vars.h"
-#include "plane_funcs.h"
+#include "variables.h"
+#include "functions.h"
 
 /* ************************************************************************** */
-/** write_intensity_to_file
+/** ouput_intensity_to_file
  *
  *  @brief Write the intensity of the binned escaped angles to file.
  *
- *  @param[in] Mu_hist *hist. An Mu_hist struct after the MCRT iterations.
- *
- *  @param[in] double *intensity. The intensity for eached binned escape angle.
- *
- *  @return 0
+ *  @param[in] intensity_histogram *hist   A Histogram_t struct after the MCRT
+ *                                         iterations.
  *
  *  @details
  *
  * ************************************************************************** */
 
-int write_intensity_to_file(Mu_hist *hist, double *intensity)
+void
+ouput_intensity_to_file(Histogram_t *hist)
 {
-    FILE *write_file_intens = NULL;
+  int i;
+  FILE *f = NULL;
 
-    if ((write_file_intens = fopen(OUTPUT_FILE_INTENS, "w")) == NULL)
-    {
-        printf("Cannot access file '%s'.\n", OUTPUT_FILE_INTENS);
-        exit(-1);
-    }
+  if((f = fopen(OUTPUT_FILE_INTENS, "w")) == NULL)
+  {
+    printf("Cannot open file %s\n", OUTPUT_FILE_INTENS);
+    return;
+  }
 
-    fprintf(write_file_intens, "theta\tcounts\tintensity\n");
+  fprintf(f, "%-12s %-12s %-12s\n", "angle", "weight", "intensity");
 
-    for (int i = 0; i < mu_bins; i++)
-        fprintf(write_file_intens, "%f\t%d\t%f\n", hist->theta[i],
-                hist->bins[i], intensity[i]);
+  for(i = 0; i < hist->n_bins; i++)
+    fprintf(f, "%-12f %-12e %-12e\n", hist->theta[i], hist->weight[i], hist->intensity[i]);
 
-    if (fclose(write_file_intens) != 0)
-    {
-        printf("Cannot close file '%s'.\n", OUTPUT_FILE_INTENS);
-        exit(-1);
-    }
-
-    return 0;
+  if(fclose(f))
+  {
+    printf("Cannot close file %s\n", OUTPUT_FILE_INTENS);
+    exit(-1);
+  }
 }
 
 /* ************************************************************************** */
-/** write_moments_to_file
+/** output_radiation_moments_to_file
  *
  *  @brief Write the JHK moments of the radiation field to file.
  *
- *  @param[in] Moments *moments. An initialised Moments struct.
+ *  @param[in] Moments *moments. An initialised Moments_t struct.
  *
  *  @return 0
  *
@@ -66,31 +62,32 @@ int write_intensity_to_file(Mu_hist *hist, double *intensity)
  *
  * ************************************************************************** */
 
-int write_moments_to_file(Moments *moments)
+void
+output_radiation_moments_to_file(Moments_t *moments)
 {
-    FILE *write_file_moments = NULL;
+  int i;
+  FILE *f = NULL;
 
-    if ((write_file_moments = fopen(OUTPUT_FILE_MOMENTS, "w")) == NULL)
-    {
-        printf("Cannot access file '%s'.\n", OUTPUT_FILE_MOMENTS);
-        exit(-1);
-    }
+  if((f = fopen(OUTPUT_FILE_MOMENTS, "w")) == NULL)
+  {
+    printf("Cannot access file %s\n", OUTPUT_FILE_MOMENTS);
+    exit(-1);
+  }
 
-    fprintf(write_file_moments, "level\tj_plus\tj_minus\th_plus\th_minus");
-    fprintf(write_file_moments, "\tk_plus\tk_minus\n");
+  fprintf(f, "%-12s %-12s %-12s %-12s %-12s %-12s %-12s\n", "level", "j_plus", "j_minus", "h_plus", "h_minus",
+    "k_plus", "k_minus");
 
-    for (int i = 0; i < n_levels + 1; i++)
-        fprintf(write_file_moments, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",
-               i+1,
-               moments->j_plus[i]/n_photons, moments->j_minus[i]/n_photons,
-               moments->h_plus[i]/n_photons, moments->h_minus[i]/n_photons,
-               moments->k_plus[i]/n_photons, moments->k_minus[i]/n_photons);
+  for(i = 0; i < moments->n_levels + 1; i++)
+  {
+    fprintf(f, "%-12d %-12e %-12e %-12e %-12e %-12e %-12e\n", i + 1,
+      moments->j_plus[i] / N_PHOTONS, moments->j_minus[i] / N_PHOTONS,
+      moments->h_plus[i] / N_PHOTONS, moments->h_minus[i] / N_PHOTONS,
+      moments->k_plus[i] / N_PHOTONS, moments->k_minus[i] / N_PHOTONS);
+  }
 
-    if (fclose(write_file_moments) != 0)
-    {
-        printf("Cannot close file '%s'.\n", OUTPUT_FILE_MOMENTS);
-        exit(-1);
-    }
-
-    return 0;
+  if(fclose(f))
+  {
+    printf("Cannot close file %s\n", OUTPUT_FILE_MOMENTS);
+    exit(-1);
+  }
 }
