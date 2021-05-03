@@ -3,10 +3,10 @@
 use libm;
 use rand::Rng;
 use std::f64;
-use std::i32;
-use time::PreciseTime;
 use std::fs::File;
+use std::i32;
 use std::io::prelude::*;
+use time::PreciseTime;
 
 /// Structure to contain photon variables
 struct PhotonPacket {
@@ -49,7 +49,7 @@ fn photon_create_at_origin() -> PhotonPacket {
 
 /// Isotropically scatter a photon, i.e. give it a new direction
 fn photon_isotropic_scatter(photon: &mut PhotonPacket) {
-    photon.cos_theta = f64::sqrt(random_number());
+    photon.cos_theta = 2.0 * random_number() - 1.0;
     photon.sin_theta = f64::sqrt(1.0 - photon.cos_theta.powf(2.0));
     photon.cos_phi = f64::cos(2.0 * f64::consts::PI * random_number());
     photon.sin_phi = f64::sqrt(1.0 - photon.cos_phi.powf(2.0));
@@ -95,6 +95,8 @@ fn transport_all_photons(n_photons: i32, progress: i32, tau_max: f64, scat_albed
             } else {
                 if random_number() < scat_albedo {
                     photon_isotropic_scatter(&mut photon);
+                } else {
+                    break;  // photon is absorbed completely
                 }
             }
         }
@@ -122,11 +124,12 @@ fn transport_all_photons(n_photons: i32, progress: i32, tau_max: f64, scat_albed
 
     let mut fp = File::create("intensity.txt").expect("Unable to open output file");
 
-    fp.write_all(b"angle intensity\n").expect("Unable to write to fp");
+    fp.write_all(b"angle intensity\n")
+        .expect("Unable to write to fp");
     for n in 0..n_bins {
-        fp.write_fmt(format_args!("{} {}\n", angle_bins[n], intensity[n])).expect("Unable to write to fp");
+        fp.write_fmt(format_args!("{} {}\n", angle_bins[n], intensity[n]))
+            .expect("Unable to write to fp");
     }
-
 }
 
 /// Main function of the program
