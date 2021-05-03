@@ -55,7 +55,6 @@ spec = [
     ("weight", float32[:]),
     ("theta", float32[:]),
     ("intensity", float32[:])
-
 ]
 
 
@@ -139,7 +138,7 @@ def transport_photon_packet(photon, tau_max, albedo):
         The scattering albedo in the atmosphere.
     """
 
-    while photon.coords[2] >= 0 and photon.coords[2] <= 1:
+    while photon.escaped is False:
 
         # sample a random optical depth and update the position of the
         # packet
@@ -159,13 +158,12 @@ def transport_photon_packet(photon, tau_max, albedo):
         elif photon.coords[2] > 1:
             photon.escaped = True
         else:
-            xi = np.random.rand()
-            if xi < albedo:
+            if np.random.rand() < albedo:
                 photon.isotropic_scatter()
             else:
                 break
 
-    return
+    return photon
 
 
 def main():
@@ -183,16 +181,20 @@ def main():
     hist = EscapedHistogram(n_bins)
     theta_bins = hist.theta
 
-    for i in range(n_photons):
+    nesc = 0
+
+    for i in range(1, n_photons + 1):
         pp = PhotonPacket()
-        transport_photon_packet(pp, tau_max, albedo)
+        pp = transport_photon_packet(pp, tau_max, albedo)
 
         if pp.escaped:
             hist.bin_photon(pp.costheta)
 
-        if (i + 1) % output_freq == 0:
-            percent_complete = 100 * (i + 1) / n_photons
-            print('{} photons ({:3.1f}%) transported.'.format(i + 1, percent_complete))
+        if i % output_freq == 0:
+            percent_complete = 100 * i / n_photons
+            print('{:3.1f}% photons transported.'.format(percent_complete))
+
+    print("nesc", nesc)
 
     intensity = hist.calculate_intensity(n_photons)
     hist.write_to_file()
