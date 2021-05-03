@@ -124,10 +124,10 @@ fn transport_all_photons(n_photons: i32, progress: i32, tau_max: f64, scat_albed
 
     let mut fp = File::create("intensity.txt").expect("Unable to open output file");
 
-    fp.write_all(b"angle intensity\n")
+    fp.write_all(b"angle weight intensity\n")
         .expect("Unable to write to fp");
     for n in 0..n_bins {
-        fp.write_fmt(format_args!("{} {}\n", angle_bins[n], intensity[n]))
+        fp.write_fmt(format_args!("{} {} {}\n", angle_bins[n], weight_bins[n], intensity[n]))
             .expect("Unable to write to fp");
     }
 }
