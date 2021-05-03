@@ -1,10 +1,10 @@
 //! A simple 1D Monte Carlo Radiative Transfer simulation
 
+use libm;
 use rand::Rng;
 use std::f64;
 use std::i32;
 use time::PreciseTime;
-use libm;
 
 /// Structure to contain photon variables
 struct PhotonPacket {
@@ -62,7 +62,6 @@ fn photon_move_length(photon: &mut PhotonPacket, length: f64) {
 
 /// Transport all photon packets through the medium
 fn transport_all_photons(n_photons: i32, progress: i32, tau_max: f64, scat_albedo: f64) {
-
     // Initialize the histogram for binning
 
     let n_bins = 45;
@@ -113,7 +112,8 @@ fn transport_all_photons(n_photons: i32, progress: i32, tau_max: f64, scat_albed
     // Calculate the intensity from the weight and angles
 
     for n in 0..n_bins {
-        intensity[n] = weight_bins[n] * n_bins as f64 / (2.0 * n_photons as f64 * f64::cos(angle_bins[n]));
+        intensity[n] =
+            weight_bins[n] * n_bins as f64 / (2.0 * n_photons as f64 * f64::cos(angle_bins[n]));
     }
 }
 
