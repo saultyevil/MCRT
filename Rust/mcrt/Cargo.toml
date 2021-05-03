@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 time = "*"
 rand = "0.6.0"
+libm = "*"
