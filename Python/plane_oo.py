@@ -7,7 +7,8 @@ the escape angle from the slab.
 import timeit
 import numpy as np
 from matplotlib import pyplot as plt
-from numba import jit, jitclass
+from numba import jit
+from numba.experimental import jitclass
 from numba import float32, int32, boolean
 
 
@@ -53,10 +54,12 @@ spec = [
     ("n_bins", int32),
     ("weight", float32[:]),
     ("theta", float32[:]),
+    ("intensity", float32[:])
+
 ]
 
 
-@jitclass(spec)
+# @jitclass(spec)
 class EscapedHistogram():
     """Histogram object. Used to track the number of photons which have escaped
     along the various escaping angles."""
@@ -74,6 +77,7 @@ class EscapedHistogram():
         self.n_bins = n_bins
         self.weight = np.zeros(n_bins, dtype=np.float32)
         self.theta = np.zeros(n_bins, dtype=np.float32)
+        self.intensity = np.zeros(n_bins, dtype=np.float32)
         d_theta = 1 / n_bins
         half_width = 0.5 * d_theta
         for i in range(n_bins):
@@ -106,7 +110,18 @@ class EscapedHistogram():
             The intensity for each binned angle.
         """
 
-        return self.weight * self.n_bins / (2 * n_photons * np.cos(self.theta))
+        self.intensity = self.weight * self.n_bins / (2 * n_photons * np.cos(self.theta))
+        return self.intensity
+
+    def write_to_file(self):
+        """
+        Write the histogram to file.
+        """
+
+        with open("intensity.txt", "w") as f:
+            f.write("angle weight intensity\n")
+            for n in range(self.n_bins):
+                f.write(f"{self.theta[n]} {self.weight[n]} {self.intensity[n]}\n")
 
 
 @jit
@@ -157,7 +172,7 @@ def main():
     """Main function of the script"""
 
     n_photons = int(1e6)
-    n_bins = 20
+    n_bins = 45
     tau_max = 7
     albedo = 1.0
     output_freq = n_photons // 10
@@ -180,6 +195,7 @@ def main():
             print('{} photons ({:3.1f}%) transported.'.format(i + 1, percent_complete))
 
     intensity = hist.calculate_intensity(n_photons)
+    hist.write_to_file()
     stop = timeit.default_timer()
 
     print('\nTransport of {} packets completed in {:3.2f} seconds.'.format(n_photons, stop - start))
