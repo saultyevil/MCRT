@@ -103,7 +103,7 @@ def isotropic_direction():
     return np.array([costheta, sintheta, cosphi, sinphi])
 
 
-@jit
+# @jit
 def transport_photons(n_photons, tau_max, n_bins, albedo, output_freq):
     """
     Transport a generation of photons through the atmosphere. The output of this
