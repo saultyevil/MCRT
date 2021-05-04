@@ -48,6 +48,37 @@ isotropic_emit_photon(PhotonPacket_t *packet)
   packet->costheta = sqrt(gsl_rand_num(0, 1));
   packet->sintheta = sqrt(1 - packet->costheta * packet->costheta);
   packet->absorb = false;
+  packet->escaped = false;
+}
+
+/* ************************************************************************** */
+/** isotropic_scatter_photon
+ *
+ *  @brief Points the photon packet in a new isotropic direction.
+ *
+ *  @param[in, out] packet  A pointer to the current photon
+ *
+ *  @return 0
+ *
+ *  @details
+ *
+ *  Points a photon packet in a new direction after an isotropic scattering
+ *  event. The random mu and phi directions are generated from the
+ *  random_cost_phi function and then a photon's sin and cos terms are updated
+ *  to represent the new direction.
+ *
+ * ************************************************************************** */
+
+void
+isotropic_scatter_photon(PhotonPacket_t *packet)
+{
+  double mu, phi;
+  random_theta_phi(&mu, &phi);
+
+  packet->cosphi = cos(phi);
+  packet->sinphi = sin(phi);
+  packet->costheta = cos(mu);
+  packet->sintheta = sin(mu);
 }
 
 /* ************************************************************************** */
@@ -120,13 +151,11 @@ void
 transport_single_photon(Histogram_t *hist, Moments_t *moments)
 {
   PhotonPacket_t photon = PHOTON_INIT;
-
   isotropic_emit_photon(&photon);
 
-  double z_orig;
-  while(photon.z >= 0.0 && photon.z <= 1.0)
+  while(photon.escaped == false)
   {
-    z_orig = photon.z;
+    double z_orig = photon.z;
     double ds = random_tau() / TAU_MAX;
     move_photon(&photon, ds);
     increment_radiation_moment_estimators(moments, z_orig, photon.z, photon.costheta);
@@ -135,22 +164,25 @@ transport_single_photon(Histogram_t *hist, Moments_t *moments)
     {
       isotropic_emit_photon(&photon);
     }
+    if(photon.z > 1.0)
+    {
+      photon.escaped = true;
+    }
     else
     {
-      double xi = gsl_rand_num(0, 1);
-      if(xi <= SCATTERING_ALBEDO)
+      if(gsl_rand_num(0, 1) < SCATTERING_ALBEDO)
       {
         isotropic_scatter_photon(&photon);
       }
       else
       {
-        photon.absorb = false;
+        photon.absorb = true;
         break;
       }
     }
   }
 
-  if(!photon.absorb)
+  if(!photon.absorb && photon.escaped)
     bin_photon_to_histogram(hist, photon.costheta);
 }
 

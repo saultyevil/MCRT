@@ -105,6 +105,7 @@ double SCATTERING_ALBEDO;
 typedef struct photon_packet
 {
     int absorb;
+    int escaped;
     double x, y, z;
     double costheta;
     double sintheta;
@@ -112,7 +113,7 @@ typedef struct photon_packet
     double sinphi;
 } PhotonPacket_t;
 
-#define PHOTON_INIT {false, 0, 0, 0, 0, 0, 0, 0};
+#define PHOTON_INIT {false, false, 0, 0, 0, 0, 0, 0, 0};
 
 /* ************************************************************************** */
 /** @struct Histogram_t

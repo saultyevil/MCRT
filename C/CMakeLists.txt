@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
-project(MCRT)
+project(mcrt)
 
 set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 
 include_directories(src)
 include_directories(C:/GSL/include)
 
-add_executable(
-        MCRT
+add_executable(mcrt
         src/histogram.c
         src/moments.c
         src/main.c
@@ -23,4 +23,4 @@ add_executable(
 
 
 find_package(GSL REQUIRED)
-target_link_libraries(MCRT GSL::gsl GSL::gslcblas)
+target_link_libraries(mcrt GSL::gsl GSL::gslcblas)

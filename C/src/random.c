@@ -87,7 +87,7 @@ random_tau(void)
 /* ************************************************************************** */
 /** random_theta_phi
  *
- *  @brief Generate a random isotropic mu and phi direction.
+ *  @brief Generate a random isotropic theta and phi direction.
  *
  *  @param[in,out] *theta A pointer for the random theta direction.
  *  @param[in,out] *phi   A pointer for the random phi direction.
@@ -104,34 +104,4 @@ random_theta_phi(double *theta, double *phi)
 {
   *theta = acos(2 * gsl_rand_num(0, 1) - 1);
   *phi = 2 * PI * gsl_rand_num(0, 1);
-}
-
-/* ************************************************************************** */
-/** isotropic_scatter_photon
- *
- *  @brief Points the photon packet in a new isotropic direction.
- *
- *  @param[in, out] packet  A pointer to the current photon
- *
- *  @return 0
- *
- *  @details
- *
- *  Points a photon packet in a new direction after an isotropic scattering
- *  event. The random mu and phi directions are generated from the
- *  random_cost_phi function and then a photon's sin and cos terms are updated
- *  to represent the new direction.
- *
- * ************************************************************************** */
-
-void
-isotropic_scatter_photon(PhotonPacket_t *packet)
-{
-  double mu, phi;
-  random_theta_phi(&mu, &phi);
-
-  packet->cosphi = cos(phi);
-  packet->sinphi = sin(phi);
-  packet->costheta = cos(mu);
-  packet->sintheta = sin(mu);
 }
